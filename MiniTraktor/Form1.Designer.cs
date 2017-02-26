@@ -36,6 +36,7 @@
             this.tbLogin = new System.Windows.Forms.TextBox();
             this.tbPassword = new System.Windows.Forms.TextBox();
             this.btnStart = new System.Windows.Forms.Button();
+            this.btnSaveTemplate = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // rtbMiniText
@@ -100,11 +101,22 @@
             this.btnStart.UseVisualStyleBackColor = true;
             this.btnStart.Click += new System.EventHandler(this.btnStart_Click);
             // 
+            // btnSaveTemplate
+            // 
+            this.btnSaveTemplate.Location = new System.Drawing.Point(601, 93);
+            this.btnSaveTemplate.Name = "btnSaveTemplate";
+            this.btnSaveTemplate.Size = new System.Drawing.Size(201, 23);
+            this.btnSaveTemplate.TabIndex = 8;
+            this.btnSaveTemplate.Text = "Сохранить шаблон";
+            this.btnSaveTemplate.UseVisualStyleBackColor = true;
+            this.btnSaveTemplate.Click += new System.EventHandler(this.btnSaveTemplate_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(814, 374);
+            this.Controls.Add(this.btnSaveTemplate);
             this.Controls.Add(this.btnStart);
             this.Controls.Add(this.tbPassword);
             this.Controls.Add(this.tbLogin);
@@ -131,6 +143,7 @@
         private System.Windows.Forms.TextBox tbLogin;
         private System.Windows.Forms.TextBox tbPassword;
         private System.Windows.Forms.Button btnStart;
+        private System.Windows.Forms.Button btnSaveTemplate;
     }
 }
 
