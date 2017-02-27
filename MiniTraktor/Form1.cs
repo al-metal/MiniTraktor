@@ -160,16 +160,41 @@ namespace MiniTraktor
             name = new Regex("(?<=product_title\">).*?(?=</h1>)").Match(otv).ToString();
             article = new Regex("(?<=itemprop=\"sku\">).*?(?=</span>)").Match(otv).ToString();
             price = new Regex("(?<=\"price\" content=\").*?(?=\" />)").Match(otv).ToString();
+            price = ReturnPrice(price);
             category = ReturnCategoryTovar(otv);
             miniText = ReturnDescriptionText(otv);
             miniText = ReplaceNameTovar(name, miniText);
             fullText = FulltextStr();
             fullText = ReplaceNameTovar(name, fullText);
+            title = tbTitle.Text;
+            title = ReplaceNameTovarSEO(name, title);
+            description = tbDescription.Text;
+            description = ReplaceNameTovarSEO(name, description);
+            keywords = tbKeywords.Text;
+            keywords = ReplaceNameTovarSEO(name, keywords);
+
+        }
+
+        private string ReturnPrice(string price)
+        {
+            double dblPrice = Convert.ToDouble(price);
+            dblPrice = dblPrice - (dblPrice * 0.02);
+            dblPrice = Math.Round(dblPrice);
+            int intPrice = Convert.ToInt32(dblPrice);
+            intPrice = (intPrice / 10) * 10;
+            price = intPrice.ToString();
+            return price;
         }
 
         private string ReplaceNameTovar(string nameTovar, string text)
         {
             nameTovar = boldOpen + nameTovar + boldClose;
+            text = text.Replace("ТОВАР", nameTovar);
+            return text;
+        }
+
+        private string ReplaceNameTovarSEO(string nameTovar, string text)
+        {
             text = text.Replace("ТОВАР", nameTovar);
             return text;
         }
