@@ -18,6 +18,8 @@ namespace MiniTraktor
     {
         WebRequest webRequest = new WebRequest();
         nethouse nethouse = new nethouse();
+        string boldOpen = "<span style=\"font-weight: bold; font-weight: bold; \">";
+        string boldClose = "</span>%26nbsp%3B";
 
         public Form1()
         {
@@ -161,10 +163,13 @@ namespace MiniTraktor
             category = ReturnCategoryTovar(otv);
             miniText = ReturnDescriptionText(otv);
             miniText = ReplaceNameTovar(name, miniText);
+            fullText = FulltextStr();
+            fullText = ReplaceNameTovar(name, fullText);
         }
 
         private string ReplaceNameTovar(string nameTovar, string text)
         {
+            nameTovar = boldOpen + nameTovar + boldClose;
             text = text.Replace("ТОВАР", nameTovar);
             return text;
         }
