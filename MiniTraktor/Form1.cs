@@ -160,6 +160,13 @@ namespace MiniTraktor
             price = new Regex("(?<=\"price\" content=\").*?(?=\" />)").Match(otv).ToString();
             category = ReturnCategoryTovar(otv);
             miniText = ReturnDescriptionText(otv);
+            miniText = ReplaceNameTovar(name, miniText);
+        }
+
+        private string ReplaceNameTovar(string nameTovar, string text)
+        {
+            text = text.Replace("ТОВАР", nameTovar);
+            return text;
         }
 
         private string ReturnDescriptionText(string otv)
@@ -173,7 +180,10 @@ namespace MiniTraktor
                 description = description.Replace(s, "").Replace("</a>", "").Trim();
             }
             description = nethouse.specChar(description);
-            
+
+            string templateMiniText = MinitextStr();
+            string discounts = ReturnDiscountsText();
+            description = description + "<br />" + templateMiniText + "<br />" + discounts;
             return description;
         }
 
@@ -263,5 +273,12 @@ namespace MiniTraktor
 
             MessageBox.Show("Сохранено");
         }
+
+        private string ReturnDiscountsText()
+        {
+            string discount = "<p style=\"\"text-align: right;\"\"><span style=\"\"font -weight: bold; font-weight: bold;\"\"> Сделай ТРОЙНОЙ удар по нашим ценам! </span></p><p style=\"\"text-align: right;\"\"><span style=\"\"font -weight: bold; font-weight: bold;\"\"> 1. <a target=\"\"_blank\"\" href =\"\"http://bike18.ru/stock\"\"> Скидки за отзывы о товарах!</a> </span></p><p style=\"\"text-align: right;\"\"><span style=\"\"font -weight: bold; font-weight: bold;\"\"> 2. <a target=\"\"_blank\"\" href =\"\"http://bike18.ru/stock\"\"> Друзьям скидки и подарки!</a> </span></p><p style=\"\"text-align: right;\"\"><span style=\"\"font -weight: bold; font-weight: bold;\"\"> 3. <a target=\"\"_blank\"\" href =\"\"http://bike18.ru/stock\"\"> Нашли дешевле!? 110% разницы Ваши!</a></span></p>";
+            return discount;
+        }
+
     }
 }
