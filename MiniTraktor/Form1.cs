@@ -19,7 +19,7 @@ namespace MiniTraktor
         WebRequest webRequest = new WebRequest();
         nethouse nethouse = new nethouse();
         string boldOpen = "<span style=\"font-weight: bold; font-weight: bold; \">";
-        string boldClose = "</span>%26nbsp%3B";
+        string boldClose = "</span>";
 
         public Form1()
         {
@@ -172,7 +172,6 @@ namespace MiniTraktor
             description = ReplaceNameTovarSEO(name, description);
             keywords = tbKeywords.Text;
             keywords = ReplaceNameTovarSEO(name, keywords);
-
         }
 
         private string ReturnPrice(string price)
@@ -195,7 +194,7 @@ namespace MiniTraktor
 
         private string ReplaceNameTovarSEO(string nameTovar, string text)
         {
-            text = text.Replace("ТОВАР", nameTovar);
+            text = text.Replace("ТОВАР", nameTovar).Replace("\n", "");
             return text;
         }
 
@@ -223,6 +222,8 @@ namespace MiniTraktor
             string strCategory = new Regex("(?<=<div class=\"breadcrumbs\">)[\\w\\W]*?(?=</div>)").Match(otv).ToString();
             MatchCollection arrayCategory = new Regex("(?<=\">).*?(?=</a>)").Matches(strCategory);
             category += arrayCategory[2].ToString() + " => " + arrayCategory[3].ToString();
+            string skobki = new Regex("\\(.*\\)").Match(category).ToString();
+            category = category.Replace(skobki, "");
             return category;
         }
         
