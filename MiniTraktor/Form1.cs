@@ -6,6 +6,7 @@ using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -16,8 +17,9 @@ namespace MiniTraktor
 {
     public partial class Form1 : Form
     {
-        WebRequest webRequest = new WebRequest();
+        web.WebRequest webRequest = new web.WebRequest();
         nethouse nethouse = new nethouse();
+        WebClient webClient = new WebClient();
         string boldOpen = "<span style=\"font-weight: bold; font-weight: bold; \">";
         string boldClose = "</span>";
 
@@ -161,6 +163,7 @@ namespace MiniTraktor
             article = new Regex("(?<=itemprop=\"sku\">).*?(?=</span>)").Match(otv).ToString();
             price = new Regex("(?<=\"price\" content=\").*?(?=\" />)").Match(otv).ToString();
             price = ReturnPrice(price);
+            ImagesDownload(otv, article);
             category = ReturnCategoryTovar(otv);
             miniText = ReturnDescriptionText(otv);
             miniText = ReplaceNameTovar(name, miniText);
@@ -172,6 +175,28 @@ namespace MiniTraktor
             description = ReplaceNameTovarSEO(name, description);
             keywords = tbKeywords.Text;
             keywords = ReplaceNameTovarSEO(name, keywords);
+        }
+
+        private void ImagesDownload(string otv, string article)
+        {
+            MatchCollection images = new Regex("(?<=data-zoom-image=\").*?(?=\" title=\")").Matches(otv);
+            int i = 0;
+            foreach(Match str in images)
+            {
+                string urlImage = str.ToString();
+                if (!File.Exists("pic\\" + article + "-" + i + ".jpg"))
+                {
+                    try
+                    {
+                        webClient.DownloadFile(urlImage, "pic\\" + article + "-" + i + ".jpg");
+                    }
+                    catch
+                    {
+
+                    }
+                }
+                i++;
+            }
         }
 
         private string ReturnPrice(string price)
