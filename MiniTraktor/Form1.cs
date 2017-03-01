@@ -180,58 +180,62 @@ namespace MiniTraktor
             string keywords = null;
             string slug = null;
             otv = webRequest.getRequest(url);
-            name = new Regex("(?<=product_title\">).*?(?=</h1>)").Match(otv).ToString();
-            article = new Regex("(?<=itemprop=\"sku\">).*?(?=</span>)").Match(otv).ToString();
-            price = new Regex("(?<=\"price\" content=\").*?(?=\" />)").Match(otv).ToString();
-            price = ReturnPrice(price);
-            ImagesDownload(otv, article);
-            category = ReturnCategoryTovar(otv);
-            miniText = ReturnDescriptionText(otv);
-            miniText = ReplaceNameTovar(name, miniText);
-            fullText = FulltextStr();
-            fullText = ReplaceNameTovar(name, fullText);
-            title = tbTitle.Text;
-            title = ReplaceNameTovarSEO(name, title);
-            description = tbDescription.Text;
-            description = ReplaceNameTovarSEO(name, description);
-            keywords = tbKeywords.Text;
-            keywords = ReplaceNameTovarSEO(name, keywords);
-            slug = chpu.vozvr(name);
-
-            if (name.Contains("&") || miniText.Contains("&") || fullText.Contains("&"))
+            if(otv != "err")
             {
-                name = AmpersChar(name);
-                miniText = AmpersChar(miniText);
-                fullText = AmpersChar(fullText);
+                name = new Regex("(?<=product_title\">).*?(?=</h1>)").Match(otv).ToString();
+                article = new Regex("(?<=itemprop=\"sku\">).*?(?=</span>)").Match(otv).ToString();
+                price = new Regex("(?<=\"price\" content=\").*?(?=\" />)").Match(otv).ToString();
+                price = ReturnPrice(price);
+                ImagesDownload(otv, article);
+                category = ReturnCategoryTovar(otv);
+                miniText = ReturnDescriptionText(otv);
+                miniText = ReplaceNameTovar(name, miniText);
+                fullText = FulltextStr();
+                fullText = ReplaceNameTovar(name, fullText);
+                title = tbTitle.Text;
+                title = ReplaceNameTovarSEO(name, title);
+                description = tbDescription.Text;
+                description = ReplaceNameTovarSEO(name, description);
+                keywords = tbKeywords.Text;
+                keywords = ReplaceNameTovarSEO(name, keywords);
+                slug = chpu.vozvr(name);
+
+                if (name.Contains("&") || miniText.Contains("&") || fullText.Contains("&"))
+                {
+                    name = AmpersChar(name);
+                    miniText = AmpersChar(miniText);
+                    fullText = AmpersChar(fullText);
+                }
+
+                if (article == "")
+                {
+                    article = "ur-" + slug;
+                }
+
+                newProduct = new List<string>();
+                newProduct.Add(""); //id
+                newProduct.Add("\"" + article + "\""); //артикул
+                newProduct.Add("\"" + name + "\"");  //название
+                newProduct.Add("\"" + price + "\""); //стоимость
+                newProduct.Add("\"" + "" + "\""); //со скидкой
+                newProduct.Add("\"" + category + "\""); //раздел товара
+                newProduct.Add("\"" + "100" + "\""); //в наличии
+                newProduct.Add("\"" + "0" + "\"");//поставка
+                newProduct.Add("\"" + "1" + "\"");//срок поставки
+                newProduct.Add("\"" + miniText + "\"");//краткий текст
+                newProduct.Add("\"" + fullText + "\"");//полностью текст
+                newProduct.Add("\"" + title + "\""); //заголовок страницы
+                newProduct.Add("\"" + description + "\""); //описание
+                newProduct.Add("\"" + keywords + "\"");//ключевые слова
+                newProduct.Add("\"" + slug + "\""); //ЧПУ
+                newProduct.Add(""); //с этим товаром покупают
+                newProduct.Add("");   //рекламные метки
+                newProduct.Add("\"" + "1" + "\"");  //показывать
+                newProduct.Add("\"" + "0" + "\""); //удалить
+
+                if(price != "0")
+                    files.fileWriterCSV(newProduct, "naSite");
             }
-
-            if(article == "")
-            {
-                article = "ur-" + slug;
-            }
-
-            newProduct = new List<string>();
-            newProduct.Add(""); //id
-            newProduct.Add("\"" + article + "\""); //артикул
-            newProduct.Add("\"" + name + "\"");  //название
-            newProduct.Add("\"" + price + "\""); //стоимость
-            newProduct.Add("\"" + "" + "\""); //со скидкой
-            newProduct.Add("\"" + category + "\""); //раздел товара
-            newProduct.Add("\"" + "100" + "\""); //в наличии
-            newProduct.Add("\"" + "0" + "\"");//поставка
-            newProduct.Add("\"" + "1" + "\"");//срок поставки
-            newProduct.Add("\"" + miniText + "\"");//краткий текст
-            newProduct.Add("\"" + fullText + "\"");//полностью текст
-            newProduct.Add("\"" + title + "\""); //заголовок страницы
-            newProduct.Add("\"" + description + "\""); //описание
-            newProduct.Add("\"" + keywords + "\"");//ключевые слова
-            newProduct.Add("\"" + slug + "\""); //ЧПУ
-            newProduct.Add(""); //с этим товаром покупают
-            newProduct.Add("");   //рекламные метки
-            newProduct.Add("\"" + "1" + "\"");  //показывать
-            newProduct.Add("\"" + "0" + "\""); //удалить
-
-            files.fileWriterCSV(newProduct, "naSite");
         }
 
         private string AmpersChar(string text)
