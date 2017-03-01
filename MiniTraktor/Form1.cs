@@ -13,6 +13,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using web;
+using Формирование_ЧПУ;
 
 namespace MiniTraktor
 {
@@ -25,6 +26,7 @@ namespace MiniTraktor
         string boldClose = "</span>";
         List<string> newProduct = new List<string>();
         FileEdit files = new FileEdit();
+        CHPU chpu = new CHPU();
 
         public Form1()
         {
@@ -164,6 +166,7 @@ namespace MiniTraktor
             string title= null;
             string description = null;
             string keywords = null;
+            string slug = null;
             otv = webRequest.getRequest(url);
             name = new Regex("(?<=product_title\">).*?(?=</h1>)").Match(otv).ToString();
             article = new Regex("(?<=itemprop=\"sku\">).*?(?=</span>)").Match(otv).ToString();
@@ -181,6 +184,7 @@ namespace MiniTraktor
             description = ReplaceNameTovarSEO(name, description);
             keywords = tbKeywords.Text;
             keywords = ReplaceNameTovarSEO(name, keywords);
+            slug = chpu.vozvr(name);
 
             newProduct = new List<string>();
             newProduct.Add(""); //id
@@ -197,7 +201,7 @@ namespace MiniTraktor
             newProduct.Add("\"" + title + "\""); //заголовок страницы
             newProduct.Add("\"" + description + "\""); //описание
             newProduct.Add("\"" + keywords + "\"");//ключевые слова
-            //newProduct.Add("\"" + slug + "\""); //ЧПУ
+            newProduct.Add("\"" + slug + "\""); //ЧПУ
             newProduct.Add(""); //с этим товаром покупают
             newProduct.Add("");   //рекламные метки
             newProduct.Add("\"" + "1" + "\"");  //показывать
