@@ -198,9 +198,16 @@ namespace MiniTraktor
             keywords = ReplaceNameTovarSEO(name, keywords);
             slug = chpu.vozvr(name);
 
+            if (name.Contains("&") || miniText.Contains("&") || fullText.Contains("&"))
+            {
+                name = AmpersChar(name);
+                miniText = AmpersChar(miniText);
+                fullText = AmpersChar(fullText);
+            }
+
             if(article == "")
             {
-
+                article = "ur-" + slug;
             }
 
             newProduct = new List<string>();
@@ -225,6 +232,12 @@ namespace MiniTraktor
             newProduct.Add("\"" + "0" + "\""); //удалить
 
             files.fileWriterCSV(newProduct, "naSite");
+        }
+
+        private string AmpersChar(string text)
+        {
+            text = text.Replace("&#8211;", "-");
+            return text;
         }
 
         private void ImagesDownload(string otv, string article)
@@ -298,7 +311,8 @@ namespace MiniTraktor
             MatchCollection arrayCategory = new Regex("(?<=\">).*?(?=</a>)").Matches(strCategory);
             category += arrayCategory[2].ToString() + " => " + arrayCategory[3].ToString();
             string skobki = new Regex("\\(.*\\)").Match(category).ToString();
-            category = category.Replace(skobki, "");
+            if(category.Contains("("))
+                category = category.Replace(skobki, "");
             return category;
         }
         
