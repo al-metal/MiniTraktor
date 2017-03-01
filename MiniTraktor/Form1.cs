@@ -1,4 +1,5 @@
 ﻿using Bike18;
+using RacerMotors;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -20,8 +21,10 @@ namespace MiniTraktor
         web.WebRequest webRequest = new web.WebRequest();
         nethouse nethouse = new nethouse();
         WebClient webClient = new WebClient();
-        string boldOpen = "<span style=\"font-weight: bold; font-weight: bold; \">";
+        string boldOpen = "<span style=\"\"font-weight: bold; font-weight: bold; \"\">";
         string boldClose = "</span>";
+        List<string> newProduct = new List<string>();
+        FileEdit files = new FileEdit();
 
         public Form1()
         {
@@ -115,6 +118,9 @@ namespace MiniTraktor
             Properties.Settings.Default.Save();
             #endregion
 
+            File.Delete("naSite.csv");
+            newList();
+
             otv = webRequest.getRequest("https://xn--80andaliilpdrd0d.xn--p1ai/shop/");
             MatchCollection categories = new Regex("(?<=<li class=\"product-category  col-md-4 col-sm-6\">)[\\w\\W]*?(?=<img)").Matches(otv);
             foreach(Match str in categories)
@@ -175,6 +181,29 @@ namespace MiniTraktor
             description = ReplaceNameTovarSEO(name, description);
             keywords = tbKeywords.Text;
             keywords = ReplaceNameTovarSEO(name, keywords);
+
+            newProduct = new List<string>();
+            newProduct.Add(""); //id
+            newProduct.Add("\"" + article + "\""); //артикул
+            newProduct.Add("\"" + name + "\"");  //название
+            newProduct.Add("\"" + price + "\""); //стоимость
+            newProduct.Add("\"" + "" + "\""); //со скидкой
+            newProduct.Add("\"" + category + "\""); //раздел товара
+            newProduct.Add("\"" + "100" + "\""); //в наличии
+            newProduct.Add("\"" + "0" + "\"");//поставка
+            newProduct.Add("\"" + "1" + "\"");//срок поставки
+            newProduct.Add("\"" + miniText + "\"");//краткий текст
+            newProduct.Add("\"" + fullText + "\"");//полностью текст
+            newProduct.Add("\"" + title + "\""); //заголовок страницы
+            newProduct.Add("\"" + description + "\""); //описание
+            newProduct.Add("\"" + keywords + "\"");//ключевые слова
+            //newProduct.Add("\"" + slug + "\""); //ЧПУ
+            newProduct.Add(""); //с этим товаром покупают
+            newProduct.Add("");   //рекламные метки
+            newProduct.Add("\"" + "1" + "\"");  //показывать
+            newProduct.Add("\"" + "0" + "\""); //удалить
+
+            files.fileWriterCSV(newProduct, "naSite");
         }
 
         private void ImagesDownload(string otv, string article)
@@ -335,6 +364,33 @@ namespace MiniTraktor
             string discount = "<p style=\"\"text-align: right;\"\"><span style=\"\"font -weight: bold; font-weight: bold;\"\"> Сделай ТРОЙНОЙ удар по нашим ценам! </span></p><p style=\"\"text-align: right;\"\"><span style=\"\"font -weight: bold; font-weight: bold;\"\"> 1. <a target=\"\"_blank\"\" href =\"\"http://bike18.ru/stock\"\"> Скидки за отзывы о товарах!</a> </span></p><p style=\"\"text-align: right;\"\"><span style=\"\"font -weight: bold; font-weight: bold;\"\"> 2. <a target=\"\"_blank\"\" href =\"\"http://bike18.ru/stock\"\"> Друзьям скидки и подарки!</a> </span></p><p style=\"\"text-align: right;\"\"><span style=\"\"font -weight: bold; font-weight: bold;\"\"> 3. <a target=\"\"_blank\"\" href =\"\"http://bike18.ru/stock\"\"> Нашли дешевле!? 110% разницы Ваши!</a></span></p>";
             return discount;
         }
+
+        private List<string> newList()
+        {
+            List<string> newProduct = new List<string>();
+            newProduct.Add("id");                                                                               //id
+            newProduct.Add("Артикул *");                                                 //артикул
+            newProduct.Add("Название товара *");                                          //название
+            newProduct.Add("Стоимость товара *");                                    //стоимость
+            newProduct.Add("Стоимость со скидкой");                                       //со скидкой
+            newProduct.Add("Раздел товара *");                                         //раздел товара
+            newProduct.Add("Товар в наличии *");                                                    //в наличии
+            newProduct.Add("Поставка под заказ *");                                                 //поставка
+            newProduct.Add("Срок поставки (дни) *");                                           //срок поставки
+            newProduct.Add("Краткий текст");                                 //краткий текст
+            newProduct.Add("Текст полностью");                                          //полностью текст
+            newProduct.Add("Заголовок страницы (title)");                               //заголовок страницы
+            newProduct.Add("Описание страницы (description)");                                 //описание
+            newProduct.Add("Ключевые слова страницы (keywords)");                                 //ключевые слова
+            newProduct.Add("ЧПУ страницы (slug)");                                   //ЧПУ
+            newProduct.Add("С этим товаром покупают");                              //с этим товаром покупают
+            newProduct.Add("Рекламные метки");
+            newProduct.Add("Показывать на сайте *");                                           //показывать
+            newProduct.Add("Удалить *");                                    //удалить
+            files.fileWriterCSV(newProduct, "naSite");
+            return newProduct;
+        }
+
 
     }
 }
