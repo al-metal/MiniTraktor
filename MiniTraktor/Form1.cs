@@ -120,6 +120,14 @@ namespace MiniTraktor
             Properties.Settings.Default.Save();
             #endregion
 
+            CookieContainer cookie = nethouse.CookieNethouse(tbLogin.Text, tbPassword.Text);
+
+            if(cookie.Count != 4)
+            {
+                MessageBox.Show("Логин или пароль введены не верно!");
+                return;
+            }
+
             File.Delete("naSite.csv");
             newList();
 
@@ -128,21 +136,25 @@ namespace MiniTraktor
             foreach(Match str in categories)
             {
                 string urlCategories = str.ToString();
-                urlCategories = urlCategories.Replace("\">", "").Replace("<a href=\"", "").Trim();
-
-                otv = webRequest.getRequest(urlCategories);
-                MatchCollection subCategories = new Regex("(?<=<li class=\"product-category  col-md-4 col-sm-6\">)[\\w\\W]*?(?=<img)").Matches(otv);
-                foreach(Match subStr in subCategories)
+                if(!urlCategories.Contains("katalogi-bumazhnaya-produktsiya") && !urlCategories.Contains("reklamnaya-produktsiya") && !urlCategories.Contains("dvigateli-dizelnyie2"))
                 {
-                    string urlSubCategories = subStr.ToString();
-                    urlSubCategories = urlSubCategories.Replace("\">", "").Replace("<a href=\"", "").Trim();
+                    urlCategories = urlCategories.Replace("\">", "").Replace("<a href=\"", "").Trim();
 
-                    GetArrayTovar(urlSubCategories);
+                    otv = webRequest.getRequest(urlCategories);
+                    MatchCollection subCategories = new Regex("(?<=<li class=\"product-category  col-md-4 col-sm-6\">)[\\w\\W]*?(?=<img)").Matches(otv);
+                    foreach (Match subStr in subCategories)
+                    {
+                        string urlSubCategories = subStr.ToString();
+                        urlSubCategories = urlSubCategories.Replace("\">", "").Replace("<a href=\"", "").Trim();
+
+                        GetArrayTovar(urlSubCategories, cookie);
+                    }
                 }
             }
+            nethouse.UploadCSVNethouse(cookie, "naSite.csv");
         }
 
-        private void GetArrayTovar(string urlSubCategories)
+        private void GetArrayTovar(string urlSubCategories, CookieContainer cookie)
         {
             string otv = null;
             otv = webRequest.getRequest(urlSubCategories);
@@ -150,11 +162,11 @@ namespace MiniTraktor
             foreach(Match str in tovars)
             {
                 string url = str.ToString();
-                GetListTovar(url);
+                GetListTovar(url,cookie);
             }
         }
 
-        private void GetListTovar(string url)
+        private void GetListTovar(string url, CookieContainer cookie)
         {
             string otv = null;
             string name = null;
@@ -185,6 +197,11 @@ namespace MiniTraktor
             keywords = tbKeywords.Text;
             keywords = ReplaceNameTovarSEO(name, keywords);
             slug = chpu.vozvr(name);
+
+            if(article == "")
+            {
+
+            }
 
             newProduct = new List<string>();
             newProduct.Add(""); //id
@@ -266,7 +283,7 @@ namespace MiniTraktor
                 string s = str.ToString();
                 description = description.Replace(s, "").Replace("</a>", "").Trim();
             }
-            description = nethouse.specChar(description);
+            description = specChar(description);
 
             string templateMiniText = MinitextStr();
             string discounts = ReturnDiscountsText();
@@ -395,6 +412,12 @@ namespace MiniTraktor
             return newProduct;
         }
 
+        public string specChar(string text)
+        {
+            text = text.Replace("&quot;", "\"").Replace("&amp;", "&").Replace("&lt;", "<").Replace("&gt;", ">").Replace("&laquo;", "«").Replace("&raquo;", "»").Replace("&ndash;", "-").Replace("&mdash;", "-").Replace("&lsquo;", "‘").Replace("&rsquo;", "’").Replace("&sbquo;", "‚").Replace("&ldquo;", "\"").Replace("&rdquo;", "”").Replace("&bdquo;", "„").Replace("&#43;", "+").Replace("&#40;", "(").Replace("&nbsp;", " ").Replace("&#41;", ")").Replace("&amp;quot;", "").Replace("&#039;", "'").Replace("&amp;gt;", ">").Replace("&#43;", "+").Replace("&#40;", "(").Replace("&nbsp;", " ").Replace("&#41;", ")").Replace("&#39;", "'").Replace("&quot;", "\"").Replace("&amp;", "&").Replace("&lt;", "<").Replace("&gt;", ">").Replace("&laquo;", "«").Replace("&raquo;", "»").Replace("&ndash;", "-").Replace("&mdash;", "-").Replace("&lsquo;", "‘").Replace("&rsquo;", "’").Replace("&sbquo;", "‚").Replace("&ldquo;", "\"").Replace("&rdquo;", "”").Replace("&bdquo;", "„").Replace("&#43;", "+").Replace("&#40;", "(").Replace("&nbsp;", " ").Replace("&#41;", ")").Replace("&amp;quot;", "").Replace("&#039;", "'").Replace("&amp;gt;", ">").Replace("&#39;", "'").Replace("&Oslash;", "Ø").Replace("&#8211;", "-");
+
+            return text;
+        }
 
     }
 }
