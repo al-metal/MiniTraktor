@@ -185,6 +185,10 @@ namespace MiniTraktor
                 name = new Regex("(?<=product_title\">).*?(?=</h1>)").Match(otv).ToString();
                 article = new Regex("(?<=itemprop=\"sku\">).*?(?=</span>)").Match(otv).ToString();
                 price = new Regex("(?<=\"price\" content=\").*?(?=\" />)").Match(otv).ToString();
+
+                if(name.Contains("&"))
+                    name = AmpersChar(name);
+
                 price = ReturnPrice(price);
                 ImagesDownload(otv, article);
                 category = ReturnCategoryTovar(otv);
@@ -205,29 +209,58 @@ namespace MiniTraktor
                     name = AmpersChar(name);
                     miniText = AmpersChar(miniText);
                     fullText = AmpersChar(fullText);
+                    title = AmpersChar(title);
+                    keywords = AmpersChar(keywords);
+                    description = AmpersChar(description);
                 }
 
-                if (article == "")
+                if (article == "" || article == "--" || article == " " || article == "-" || article == "----")
                 {
                     article = "ur-" + slug;
                 }
+                else
+                {
+                    article = "ur-" + article;
+                }
+
+                if(name.Length > 255)
+                    name = name.Remove(255);
+                if (article.Length > 128)
+                    article = article.Remove(128);
+                if (title.Length > 255)
+                {
+                    title = title.Remove(255);
+                    title = title.Remove(title.LastIndexOf(" "));
+                }
+                if (description.Length > 200)
+                {
+                    description = description.Remove(200);
+                    description = description.Remove(description.LastIndexOf(" "));
+                }
+                if (keywords.Length > 100)
+                {
+                    keywords = keywords.Remove(100);
+                    keywords = keywords.Remove(keywords.LastIndexOf(" "));
+                }
+                    
+
 
                 newProduct = new List<string>();
                 newProduct.Add(""); //id
-                newProduct.Add("\"" + article + "\""); //артикул
-                newProduct.Add("\"" + name + "\"");  //название
-                newProduct.Add("\"" + price + "\""); //стоимость
+                newProduct.Add("\"" + article.Trim() + "\""); //артикул
+                newProduct.Add("\"" + name.Trim() + "\"");  //название
+                newProduct.Add("\"" + price.Trim() + "\""); //стоимость
                 newProduct.Add("\"" + "" + "\""); //со скидкой
-                newProduct.Add("\"" + category + "\""); //раздел товара
+                newProduct.Add("\"" + category.Trim() + "\""); //раздел товара
                 newProduct.Add("\"" + "100" + "\""); //в наличии
                 newProduct.Add("\"" + "0" + "\"");//поставка
                 newProduct.Add("\"" + "1" + "\"");//срок поставки
-                newProduct.Add("\"" + miniText + "\"");//краткий текст
-                newProduct.Add("\"" + fullText + "\"");//полностью текст
-                newProduct.Add("\"" + title + "\""); //заголовок страницы
-                newProduct.Add("\"" + description + "\""); //описание
-                newProduct.Add("\"" + keywords + "\"");//ключевые слова
-                newProduct.Add("\"" + slug + "\""); //ЧПУ
+                newProduct.Add("\"" + miniText.Trim() + "\"");//краткий текст
+                newProduct.Add("\"" + fullText.Trim() + "\"");//полностью текст
+                newProduct.Add("\"" + title.Trim() + "\""); //заголовок страницы
+                newProduct.Add("\"" + description.Trim() + "\""); //описание
+                newProduct.Add("\"" + keywords.Trim() + "\"");//ключевые слова
+                newProduct.Add("\"" + slug.Trim() + "\""); //ЧПУ
                 newProduct.Add(""); //с этим товаром покупают
                 newProduct.Add("");   //рекламные метки
                 newProduct.Add("\"" + "1" + "\"");  //показывать
@@ -240,7 +273,7 @@ namespace MiniTraktor
 
         private string AmpersChar(string text)
         {
-            text = text.Replace("&#8211;", "-");
+            text = text.Replace("&#8211;", "-").Replace("&#8220;", "«").Replace("&#8221;", "»").Replace("&#8212;", "-").Replace("&#8243;", "″").Replace("&#215;", "-").Replace("~", "");
             return text;
         }
 

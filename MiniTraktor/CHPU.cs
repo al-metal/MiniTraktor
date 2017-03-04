@@ -114,7 +114,11 @@ namespace Формирование_ЧПУ
 
             words.Clear();
             vyhod = vyhod.Replace("--", "-").Replace("---", "-").Replace("-----", "-").Replace("&", "").Replace("\"", "").Replace("=", "").Replace("*", "").Replace("+", "").Replace("(", "").Replace(")", "").Replace("<", "").Replace(">", "").Replace("^", "").Replace("\\", "").Replace("/", "").Replace("'", "").Replace("`", "").Replace("$", "").Replace("°", "").Replace(";", "").Replace("«", "").Replace("»", "").Replace("№", "").Replace("_", "").Replace("?", "");
+            if (vyhod.Contains("?"))
+            {
 
+            }
+            vyhod = vyhod.Replace("?", "");
             char ch = vyhod[vyhod.Length - 1];
             if (ch == '-')
                 vyhod = vyhod.Substring(0, vyhod.Length - 1);
