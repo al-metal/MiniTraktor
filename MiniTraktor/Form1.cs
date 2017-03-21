@@ -27,6 +27,7 @@ namespace MiniTraktor
         List<string> newProduct = new List<string>();
         FileEdit files = new FileEdit();
         CHPU chpu = new CHPU();
+        int countEdit = 0;
 
         public Form1()
         {
@@ -149,9 +150,17 @@ namespace MiniTraktor
 
                         GetArrayTovar(urlSubCategories, cookie);
                     }
+
+                    MatchCollection tovars = new Regex("(?<=<a class=\"product-loop-title\" href=\")[\\w\\W]*?(?=\"><h3>)").Matches(otv);
+                    foreach (Match tovar in tovars)
+                    {
+                        string url = tovar.ToString();
+                        GetListTovar(url, cookie);
+                    }
                 }
             }
             nethouse.UploadCSVNethouse(cookie, "naSite.csv");
+            MessageBox.Show("Обновлено товаров: " + countEdit);
         }
 
         private void GetArrayTovar(string urlSubCategories, CookieContainer cookie)
@@ -223,7 +232,22 @@ namespace MiniTraktor
                     article = "ur-" + article;
                 }
 
-                if(name.Length > 255)
+                string searchTovarInBike = nethouse.searchTovar(name, article);
+                if(searchTovarInBike == null)
+                    searchTovarInBike = nethouse.searchTovar(name, name);
+
+                if(searchTovarInBike != null)
+                {
+                    UpdateTovar(searchTovarInBike, price, cookie);
+                    return;
+                }
+
+                searchTovarInBike = nethouse.searchTovar(name, article);
+                if (searchTovarInBike == null)
+                    searchTovarInBike = nethouse.searchTovar(name, name);
+
+
+                if (name.Length > 255)
                     name = name.Remove(255);
                 if (article.Length > 128)
                     article = article.Remove(128);
@@ -268,6 +292,18 @@ namespace MiniTraktor
 
                 if(price != "0")
                     files.fileWriterCSV(newProduct, "naSite");
+            }
+        }
+
+        private void UpdateTovar(string searchTovarInBike, string price, CookieContainer cookie)
+        {
+            List<string> tovarBike = nethouse.GetProductList(cookie, searchTovarInBike);
+            string priceBike = tovarBike[9].ToString();
+            if(price != priceBike)
+            {
+                tovarBike[9] = price;
+                nethouse.SaveTovar(cookie, tovarBike);
+                countEdit++;
             }
         }
 
@@ -346,7 +382,14 @@ namespace MiniTraktor
             string category = "Запчасти и расходники => Запчасти для сельхозтехники и навесного оборудования => ";
             string strCategory = new Regex("(?<=<div class=\"breadcrumbs\">)[\\w\\W]*?(?=</div>)").Match(otv).ToString();
             MatchCollection arrayCategory = new Regex("(?<=\">).*?(?=</a>)").Matches(strCategory);
-            category += arrayCategory[2].ToString() + " => " + arrayCategory[3].ToString();
+            if(arrayCategory.Count == 3)
+            {
+                category += arrayCategory[2].ToString();
+            }
+            else
+            {
+                category += arrayCategory[2].ToString() + " => " + arrayCategory[3].ToString();
+            }
             string skobki = new Regex("\\(.*\\)").Match(category).ToString();
             if(category.Contains("("))
                 category = category.Replace(skobki, "");
