@@ -10,6 +10,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using web;
@@ -21,13 +22,23 @@ namespace MiniTraktor
     {
         web.WebRequest webRequest = new web.WebRequest();
         nethouse nethouse = new nethouse();
+        FileEdit files = new FileEdit();
         WebClient webClient = new WebClient();
+        CHPU chpu = new CHPU();
+
+        Thread forms;
+
+        List<string> newProduct = new List<string>();
         string boldOpen = "<span style=\"\"font-weight: bold; font-weight: bold; \"\">";
         string boldClose = "</span>";
-        List<string> newProduct = new List<string>();
-        FileEdit files = new FileEdit();
-        CHPU chpu = new CHPU();
         int countEdit = 0;
+        string otv;
+
+        string minitextTemplate;
+        string fullTextTemplate;
+        string keywordsTextTemplate;
+        string titleTextTemplate;
+        string descriptionTextTemplate;
 
         public Form1()
         {
@@ -114,7 +125,6 @@ namespace MiniTraktor
 
         private void btnStart_Click(object sender, EventArgs e)
         {
-            string otv = null;
             #region Login and password
             Properties.Settings.Default.login = tbLogin.Text;
             Properties.Settings.Default.password = tbPassword.Text;
@@ -123,21 +133,35 @@ namespace MiniTraktor
 
             CookieContainer cookie = nethouse.CookieNethouse(tbLogin.Text, tbPassword.Text);
 
-            if(cookie.Count != 4)
+            if (cookie.Count != 4)
             {
                 MessageBox.Show("Логин или пароль введены не верно!");
                 return;
             }
 
+            minitextTemplate = MinitextStr();
+            fullTextTemplate = FulltextStr();
+            keywordsTextTemplate = tbKeywords.Lines[0].ToString();
+            titleTextTemplate = tbTitle.Lines[0].ToString();
+            descriptionTextTemplate = tbDescription.Lines[0].ToString();
+
             File.Delete("naSite.csv");
             newList();
 
+            Thread tabl = new Thread(() => UpdateTovar(cookie));
+            forms = tabl;
+            forms.IsBackground = true;
+            forms.Start();
+        }
+
+        private void UpdateTovar(CookieContainer cookie)
+        {
             otv = webRequest.getRequest("https://xn--80andaliilpdrd0d.xn--p1ai/shop/");
             MatchCollection categories = new Regex("(?<=<li class=\"product-category  col-md-4 col-sm-6\">)[\\w\\W]*?(?=<img)").Matches(otv);
-            foreach(Match str in categories)
+            foreach (Match str in categories)
             {
                 string urlCategories = str.ToString();
-                if(!urlCategories.Contains("katalogi-bumazhnaya-produktsiya") && !urlCategories.Contains("reklamnaya-produktsiya") && !urlCategories.Contains("dvigateli-dizelnyie2"))
+                if (!urlCategories.Contains("katalogi-bumazhnaya-produktsiya") && !urlCategories.Contains("reklamnaya-produktsiya") && !urlCategories.Contains("dvigateli-dizelnyie2"))
                 {
                     urlCategories = urlCategories.Replace("\">", "").Replace("<a href=\"", "").Trim();
 
@@ -168,10 +192,10 @@ namespace MiniTraktor
             string otv = null;
             otv = webRequest.getRequest(urlSubCategories);
             MatchCollection tovars = new Regex("(?<=<a class=\"product-loop-title\" href=\")[\\w\\W]*?(?=\"><h3>)").Matches(otv);
-            foreach(Match str in tovars)
+            foreach (Match str in tovars)
             {
                 string url = str.ToString();
-                GetListTovar(url,cookie);
+                GetListTovar(url, cookie);
             }
         }
 
@@ -184,18 +208,18 @@ namespace MiniTraktor
             string category = null;
             string miniText = null;
             string fullText = null;
-            string title= null;
+            string title = null;
             string description = null;
             string keywords = null;
             string slug = null;
             otv = webRequest.getRequest(url);
-            if(otv != "err")
+            if (otv != "err")
             {
                 name = new Regex("(?<=product_title\">).*?(?=</h1>)").Match(otv).ToString();
                 article = new Regex("(?<=itemprop=\"sku\">).*?(?=</span>)").Match(otv).ToString();
                 price = new Regex("(?<=\"price\" content=\").*?(?=\" />)").Match(otv).ToString();
 
-                if(name.Contains("&"))
+                if (name.Contains("&"))
                     name = AmpersChar(name);
 
                 price = ReturnPrice(price);
@@ -233,10 +257,10 @@ namespace MiniTraktor
                 }
 
                 string searchTovarInBike = nethouse.searchTovar(name, article);
-                if(searchTovarInBike == null)
+                if (searchTovarInBike == null)
                     searchTovarInBike = nethouse.searchTovar(name, name);
 
-                if(searchTovarInBike != null)
+                if (searchTovarInBike != null)
                 {
                     UpdateTovar(searchTovarInBike, price, cookie);
                     return;
@@ -266,7 +290,7 @@ namespace MiniTraktor
                     keywords = keywords.Remove(100);
                     keywords = keywords.Remove(keywords.LastIndexOf(" "));
                 }
-                    
+
 
 
                 newProduct = new List<string>();
@@ -290,7 +314,7 @@ namespace MiniTraktor
                 newProduct.Add("\"" + "1" + "\"");  //показывать
                 newProduct.Add("\"" + "0" + "\""); //удалить
 
-                if(price != "0")
+                if (price != "0")
                     files.fileWriterCSV(newProduct, "naSite");
             }
         }
@@ -299,7 +323,7 @@ namespace MiniTraktor
         {
             List<string> tovarBike = nethouse.GetProductList(cookie, searchTovarInBike);
             string priceBike = tovarBike[9].ToString();
-            if(price != priceBike)
+            if (price != priceBike)
             {
                 tovarBike[9] = price;
                 nethouse.SaveTovar(cookie, tovarBike);
@@ -317,7 +341,7 @@ namespace MiniTraktor
         {
             MatchCollection images = new Regex("(?<=data-zoom-image=\").*?(?=\" title=\")").Matches(otv);
             int i = 0;
-            foreach(Match str in images)
+            foreach (Match str in images)
             {
                 string urlImage = str.ToString();
                 if (!File.Exists("pic\\" + article + "-" + i + ".jpg"))
@@ -364,7 +388,7 @@ namespace MiniTraktor
             string description = null;
             description = new Regex("(?<=class=\"description\">)[\\w\\W]*?(?=</div>)").Match(otv).ToString();
             MatchCollection urls = new Regex("<a.*?\">").Matches(description);
-            foreach(Match str in urls)
+            foreach (Match str in urls)
             {
                 string s = str.ToString();
                 description = description.Replace(s, "").Replace("</a>", "").Trim();
@@ -382,7 +406,7 @@ namespace MiniTraktor
             string category = "Запчасти и расходники => Запчасти для сельхозтехники и навесного оборудования => ";
             string strCategory = new Regex("(?<=<div class=\"breadcrumbs\">)[\\w\\W]*?(?=</div>)").Match(otv).ToString();
             MatchCollection arrayCategory = new Regex("(?<=\">).*?(?=</a>)").Matches(strCategory);
-            if(arrayCategory.Count == 3)
+            if (arrayCategory.Count == 3)
             {
                 category += arrayCategory[2].ToString();
             }
@@ -391,11 +415,11 @@ namespace MiniTraktor
                 category += arrayCategory[2].ToString() + " => " + arrayCategory[3].ToString();
             }
             string skobki = new Regex("\\(.*\\)").Match(category).ToString();
-            if(category.Contains("("))
+            if (category.Contains("("))
                 category = category.Replace(skobki, "");
             return category;
         }
-        
+
         private string MinitextStr()
         {
             string minitext = "";
