@@ -192,9 +192,7 @@ namespace MiniTraktor
                     string articl = product[1];
                     string searchTovarInBike = nethouse.searchTovar(nameProduct, articl);
                     if(searchTovarInBike == null)
-                    {
-
-                    }
+                        WriteTovarInCSV(product);
                     else
                     {
                         string price = product[2];
@@ -204,7 +202,9 @@ namespace MiniTraktor
 
                         if(price != priceB18)
                         {
-
+                            productB18[9] = price;
+                            nethouse.SaveTovar(cookie, productB18);
+                            countEdit++;
                         }
                     }
                 }
@@ -213,6 +213,84 @@ namespace MiniTraktor
             MessageBox.Show("Обновлено товаров: " + countEdit);
 
             ControlsFormEnabledTrue();
+        }
+
+        private void WriteTovarInCSV(List<string> product)
+        {
+            string name = product[0];
+            string article = product[1];
+            string price = product[2];
+            string category = product[3];
+            string miniDescriptionText = product[4];
+            string slug = product[5];
+
+            string miniText = minitextTemplate;
+            string fullText = fullTextTemplate;
+
+            miniText = ReplaceNameTovar(name, miniText);
+            fullText = ReplaceNameTovar(name, fullText);
+
+            miniText = miniDescriptionText + "<br >" + miniText;
+
+            string titleText = titleTextTemplate;
+            string descriptionText = descriptionTextTemplate;
+            string keywordsText = keywordsTextTemplate;
+
+            titleText = ReplaceSEO(titleText, name, article);
+            descriptionText = ReplaceSEO(descriptionText, name, article);
+            keywordsText = ReplaceSEO(keywordsText, name, article);
+
+            if (name.Length > 255)
+                name = name.Remove(255);
+            if (article.Length > 128)
+                article = article.Remove(128);
+
+            if (titleText.Length > 255)
+            {
+                titleText = titleText.Remove(255);
+                titleText = titleText.Remove(titleText.LastIndexOf(" "));
+            }
+            if (descriptionText.Length > 200)
+            {
+                descriptionText = descriptionText.Remove(200);
+                descriptionText = descriptionText.Remove(descriptionText.LastIndexOf(" "));
+            }
+            if (keywordsText.Length > 100)
+            {
+                keywordsText = keywordsText.Remove(100);
+                keywordsText = keywordsText.Remove(keywordsText.LastIndexOf(" "));
+            }
+            
+            newProduct = new List<string>();
+            newProduct.Add(""); //id
+            newProduct.Add("\"" + article.Trim() + "\""); //артикул
+            newProduct.Add("\"" + name.Trim() + "\"");  //название
+            newProduct.Add("\"" + price.Trim() + "\""); //стоимость
+            newProduct.Add("\"" + "" + "\""); //со скидкой
+            newProduct.Add("\"" + category.Trim() + "\""); //раздел товара
+            newProduct.Add("\"" + "100" + "\""); //в наличии
+            newProduct.Add("\"" + "0" + "\"");//поставка
+            newProduct.Add("\"" + "1" + "\"");//срок поставки
+            newProduct.Add("\"" + miniText.Trim() + "\"");//краткий текст
+            newProduct.Add("\"" + fullText.Trim() + "\"");//полностью текст
+            newProduct.Add("\"" + titleText.Trim() + "\""); //заголовок страницы
+            newProduct.Add("\"" + descriptionText.Trim() + "\""); //описание
+            newProduct.Add("\"" + keywordsText.Trim() + "\"");//ключевые слова
+            newProduct.Add("\"" + slug.Trim() + "\""); //ЧПУ
+            newProduct.Add(""); //с этим товаром покупают
+            newProduct.Add("");   //рекламные метки
+            newProduct.Add("\"" + "1" + "\"");  //показывать
+            newProduct.Add("\"" + "0" + "\""); //удалить
+
+            if (price != "0")
+                files.fileWriterCSV(newProduct, "naSite");
+        }
+
+        private string ReplaceSEO(string text, string nameTovarRacerMotors, string article)
+        {
+            string discount = Discount();
+            text = text.Replace("СКИДКА", discount).Replace("НАЗВАНИЕ", nameTovarRacerMotors).Replace("АРТИКУЛ", article);
+            return text;
         }
 
         private void GetArrayTovar(string urlSubCategories, CookieContainer cookie)
@@ -252,9 +330,10 @@ namespace MiniTraktor
             slug = chpu.vozvr(name);
 
             if (article == "" || article == "--" || article == " " || article == "-" || article == "----")
-                article = "ur-" + slug;
+                article = "ur_" + slug;
             else
-                article = "ur-" + article;
+                article = "ur_" + article;
+            article = article.Replace("-", "_");
 
             price = ReturnPrice(price);
             ImagesDownload(otv, article);
@@ -270,82 +349,6 @@ namespace MiniTraktor
             tovar.Add(miniText);
             tovar.Add(slug);
 
-
-            /*
-            fullText = FulltextStr();
-            fullText = ReplaceNameTovar(name, fullText);
-            title = tbTitle.Text;
-            title = ReplaceNameTovarSEO(name, title);
-            description = tbDescription.Text;
-            description = ReplaceNameTovarSEO(name, description);
-            keywords = tbKeywords.Text;
-            keywords = ReplaceNameTovarSEO(name, keywords);
-
-
-
-
-
-
-            string searchTovarInBike = nethouse.searchTovar(name, article);
-            if (searchTovarInBike == null)
-                searchTovarInBike = nethouse.searchTovar(name, name);
-
-            if (searchTovarInBike != null)
-            {
-                UpdateTovar(searchTovarInBike, price, cookie);
-                return;
-            }
-
-            searchTovarInBike = nethouse.searchTovar(name, article);
-            if (searchTovarInBike == null)
-                searchTovarInBike = nethouse.searchTovar(name, name);
-
-
-            if (name.Length > 255)
-                name = name.Remove(255);
-            if (article.Length > 128)
-                article = article.Remove(128);
-            if (title.Length > 255)
-            {
-                title = title.Remove(255);
-                title = title.Remove(title.LastIndexOf(" "));
-            }
-            if (description.Length > 200)
-            {
-                description = description.Remove(200);
-                description = description.Remove(description.LastIndexOf(" "));
-            }
-            if (keywords.Length > 100)
-            {
-                keywords = keywords.Remove(100);
-                keywords = keywords.Remove(keywords.LastIndexOf(" "));
-            }
-
-
-
-            newProduct = new List<string>();
-            newProduct.Add(""); //id
-            newProduct.Add("\"" + article.Trim() + "\""); //артикул
-            newProduct.Add("\"" + name.Trim() + "\"");  //название
-            newProduct.Add("\"" + price.Trim() + "\""); //стоимость
-            newProduct.Add("\"" + "" + "\""); //со скидкой
-            newProduct.Add("\"" + category.Trim() + "\""); //раздел товара
-            newProduct.Add("\"" + "100" + "\""); //в наличии
-            newProduct.Add("\"" + "0" + "\"");//поставка
-            newProduct.Add("\"" + "1" + "\"");//срок поставки
-            newProduct.Add("\"" + miniText.Trim() + "\"");//краткий текст
-            newProduct.Add("\"" + fullText.Trim() + "\"");//полностью текст
-            newProduct.Add("\"" + title.Trim() + "\""); //заголовок страницы
-            newProduct.Add("\"" + description.Trim() + "\""); //описание
-            newProduct.Add("\"" + keywords.Trim() + "\"");//ключевые слова
-            newProduct.Add("\"" + slug.Trim() + "\""); //ЧПУ
-            newProduct.Add(""); //с этим товаром покупают
-            newProduct.Add("");   //рекламные метки
-            newProduct.Add("\"" + "1" + "\"");  //показывать
-            newProduct.Add("\"" + "0" + "\""); //удалить
-
-            if (price != "0")
-                files.fileWriterCSV(newProduct, "naSite");*/
             return tovar;
         }
 
@@ -404,12 +407,6 @@ namespace MiniTraktor
         {
             nameTovar = boldOpen + nameTovar + boldClose;
             text = text.Replace("ТОВАР", nameTovar);
-            return text;
-        }
-
-        private string ReplaceNameTovarSEO(string nameTovar, string text)
-        {
-            text = text.Replace("ТОВАР", nameTovar).Replace("\n", "");
             return text;
         }
 
@@ -525,7 +522,7 @@ namespace MiniTraktor
             MessageBox.Show("Сохранено");
         }
 
-        private string ReturnDiscountsText()
+        private string Discount()
         {
             string discount = "<p style=\"\"text-align: right;\"\"><span style=\"\"font -weight: bold; font-weight: bold;\"\"> Сделай ТРОЙНОЙ удар по нашим ценам! </span></p><p style=\"\"text-align: right;\"\"><span style=\"\"font -weight: bold; font-weight: bold;\"\"> 1. <a target=\"\"_blank\"\" href =\"\"http://bike18.ru/stock\"\"> Скидки за отзывы о товарах!</a> </span></p><p style=\"\"text-align: right;\"\"><span style=\"\"font -weight: bold; font-weight: bold;\"\"> 2. <a target=\"\"_blank\"\" href =\"\"http://bike18.ru/stock\"\"> Друзьям скидки и подарки!</a> </span></p><p style=\"\"text-align: right;\"\"><span style=\"\"font -weight: bold; font-weight: bold;\"\"> 3. <a target=\"\"_blank\"\" href =\"\"http://bike18.ru/stock\"\"> Нашли дешевле!? 110% разницы Ваши!</a></span></p>";
             return discount;
