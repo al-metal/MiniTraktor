@@ -209,7 +209,12 @@ namespace MiniTraktor
                     }
                 }
             }
-            nethouse.UploadCSVNethouse(cookie, "naSite.csv");
+
+            System.Threading.Thread.Sleep(10000);
+            string[] naSite1 = File.ReadAllLines("naSite.csv", Encoding.GetEncoding(1251));
+            if (naSite1.Length > 1)
+                nethouse.UploadCSVNethouse(cookie, "naSite.csv");
+
             MessageBox.Show("Обновлено товаров: " + countEdit);
 
             ControlsFormEnabledTrue();
