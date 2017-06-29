@@ -156,35 +156,63 @@ namespace MiniTraktor
 
         private void UpdateTovar(CookieContainer cookie)
         {
+            ControlsFormEnabledFalse();
+
             otv = webRequest.getRequest("https://xn--80andaliilpdrd0d.xn--p1ai/shop/");
             MatchCollection categories = new Regex("(?<=<li class=\"product-category  col-md-4 col-sm-6\">)[\\w\\W]*?(?=<img)").Matches(otv);
             foreach (Match str in categories)
             {
                 string urlCategories = str.ToString();
-                if (!urlCategories.Contains("katalogi-bumazhnaya-produktsiya") && !urlCategories.Contains("reklamnaya-produktsiya") && !urlCategories.Contains("dvigateli-dizelnyie2"))
+                if (urlCategories.Contains("katalogi-bumazhnaya-produktsiya") || urlCategories.Contains("reklamnaya-produktsiya") || urlCategories.Contains("dvigateli-dizelnyie2"))
+                    continue;
+
+                urlCategories = urlCategories.Replace("\">", "").Replace("<a href=\"", "").Trim();
+
+                otv = webRequest.getRequest(urlCategories);
+                MatchCollection subCategories = new Regex("(?<=<li class=\"product-category  col-md-4 col-sm-6\">)[\\w\\W]*?(?=<img)").Matches(otv);
+                foreach (Match subStr in subCategories)
                 {
-                    urlCategories = urlCategories.Replace("\">", "").Replace("<a href=\"", "").Trim();
+                    string urlSubCategories = subStr.ToString();
+                    urlSubCategories = urlSubCategories.Replace("\">", "").Replace("<a href=\"", "").Trim();
 
-                    otv = webRequest.getRequest(urlCategories);
-                    MatchCollection subCategories = new Regex("(?<=<li class=\"product-category  col-md-4 col-sm-6\">)[\\w\\W]*?(?=<img)").Matches(otv);
-                    foreach (Match subStr in subCategories)
+                    GetArrayTovar(urlSubCategories, cookie);
+                }
+
+                MatchCollection tovars = new Regex("(?<=<a class=\"product-loop-title\" href=\")[\\w\\W]*?(?=\"><h3>)").Matches(otv);
+                foreach (Match tovar in tovars)
+                {
+                    List<string> product = new List<string>();
+                    string url = tovar.ToString();
+                    product = GetListTovar(url, cookie);
+
+                    if (product == null)
+                        continue;
+
+                    string nameProduct = product[0];
+                    string articl = product[1];
+                    string searchTovarInBike = nethouse.searchTovar(nameProduct, articl);
+                    if(searchTovarInBike == null)
                     {
-                        string urlSubCategories = subStr.ToString();
-                        urlSubCategories = urlSubCategories.Replace("\">", "").Replace("<a href=\"", "").Trim();
 
-                        GetArrayTovar(urlSubCategories, cookie);
                     }
-
-                    MatchCollection tovars = new Regex("(?<=<a class=\"product-loop-title\" href=\")[\\w\\W]*?(?=\"><h3>)").Matches(otv);
-                    foreach (Match tovar in tovars)
+                    else
                     {
-                        string url = tovar.ToString();
-                        GetListTovar(url, cookie);
+                        string price = product[2];
+
+                        List<string> productB18 = nethouse.GetProductList(cookie, searchTovarInBike);
+                        string priceB18 = productB18[9];
+
+                        if(price != priceB18)
+                        {
+
+                        }
                     }
                 }
             }
             nethouse.UploadCSVNethouse(cookie, "naSite.csv");
             MessageBox.Show("Обновлено товаров: " + countEdit);
+
+            ControlsFormEnabledTrue();
         }
 
         private void GetArrayTovar(string urlSubCategories, CookieContainer cookie)
@@ -199,124 +227,126 @@ namespace MiniTraktor
             }
         }
 
-        private void GetListTovar(string url, CookieContainer cookie)
+        private List<string> GetListTovar(string url, CookieContainer cookie)
         {
+            List<string> tovar = new List<string>();
             string otv = null;
             string name = null;
             string article = null;
             string price = null;
             string category = null;
             string miniText = null;
-            string fullText = null;
-            string title = null;
-            string description = null;
-            string keywords = null;
             string slug = null;
+
             otv = webRequest.getRequest(url);
-            if (otv != "err")
+            if (otv == "err")
+                return tovar = null;
+
+            name = new Regex("(?<=product_title\">).*?(?=</h1>)").Match(otv).ToString();
+            article = new Regex("(?<=itemprop=\"sku\">).*?(?=</span>)").Match(otv).ToString();
+            price = new Regex("(?<=\"price\" content=\").*?(?=\" />)").Match(otv).ToString();
+
+            if (name.Contains("&"))
+                name = AmpersChar(name);
+
+            slug = chpu.vozvr(name);
+
+            if (article == "" || article == "--" || article == " " || article == "-" || article == "----")
+                article = "ur-" + slug;
+            else
+                article = "ur-" + article;
+
+            price = ReturnPrice(price);
+            ImagesDownload(otv, article);
+            category = ReturnCategoryTovar(otv);
+
+            miniText = ReturnDescriptionText(otv);
+            miniText = AmpersChar(miniText);
+
+            tovar.Add(name);
+            tovar.Add(article);
+            tovar.Add(price);
+            tovar.Add(category);
+            tovar.Add(miniText);
+            tovar.Add(slug);
+
+
+            /*
+            fullText = FulltextStr();
+            fullText = ReplaceNameTovar(name, fullText);
+            title = tbTitle.Text;
+            title = ReplaceNameTovarSEO(name, title);
+            description = tbDescription.Text;
+            description = ReplaceNameTovarSEO(name, description);
+            keywords = tbKeywords.Text;
+            keywords = ReplaceNameTovarSEO(name, keywords);
+
+
+
+
+
+
+            string searchTovarInBike = nethouse.searchTovar(name, article);
+            if (searchTovarInBike == null)
+                searchTovarInBike = nethouse.searchTovar(name, name);
+
+            if (searchTovarInBike != null)
             {
-                name = new Regex("(?<=product_title\">).*?(?=</h1>)").Match(otv).ToString();
-                article = new Regex("(?<=itemprop=\"sku\">).*?(?=</span>)").Match(otv).ToString();
-                price = new Regex("(?<=\"price\" content=\").*?(?=\" />)").Match(otv).ToString();
-
-                if (name.Contains("&"))
-                    name = AmpersChar(name);
-
-                price = ReturnPrice(price);
-                ImagesDownload(otv, article);
-                category = ReturnCategoryTovar(otv);
-                miniText = ReturnDescriptionText(otv);
-                miniText = ReplaceNameTovar(name, miniText);
-                fullText = FulltextStr();
-                fullText = ReplaceNameTovar(name, fullText);
-                title = tbTitle.Text;
-                title = ReplaceNameTovarSEO(name, title);
-                description = tbDescription.Text;
-                description = ReplaceNameTovarSEO(name, description);
-                keywords = tbKeywords.Text;
-                keywords = ReplaceNameTovarSEO(name, keywords);
-                slug = chpu.vozvr(name);
-
-                if (name.Contains("&") || miniText.Contains("&") || fullText.Contains("&"))
-                {
-                    name = AmpersChar(name);
-                    miniText = AmpersChar(miniText);
-                    fullText = AmpersChar(fullText);
-                    title = AmpersChar(title);
-                    keywords = AmpersChar(keywords);
-                    description = AmpersChar(description);
-                }
-
-                if (article == "" || article == "--" || article == " " || article == "-" || article == "----")
-                {
-                    article = "ur-" + slug;
-                }
-                else
-                {
-                    article = "ur-" + article;
-                }
-
-                string searchTovarInBike = nethouse.searchTovar(name, article);
-                if (searchTovarInBike == null)
-                    searchTovarInBike = nethouse.searchTovar(name, name);
-
-                if (searchTovarInBike != null)
-                {
-                    UpdateTovar(searchTovarInBike, price, cookie);
-                    return;
-                }
-
-                searchTovarInBike = nethouse.searchTovar(name, article);
-                if (searchTovarInBike == null)
-                    searchTovarInBike = nethouse.searchTovar(name, name);
-
-
-                if (name.Length > 255)
-                    name = name.Remove(255);
-                if (article.Length > 128)
-                    article = article.Remove(128);
-                if (title.Length > 255)
-                {
-                    title = title.Remove(255);
-                    title = title.Remove(title.LastIndexOf(" "));
-                }
-                if (description.Length > 200)
-                {
-                    description = description.Remove(200);
-                    description = description.Remove(description.LastIndexOf(" "));
-                }
-                if (keywords.Length > 100)
-                {
-                    keywords = keywords.Remove(100);
-                    keywords = keywords.Remove(keywords.LastIndexOf(" "));
-                }
-
-
-
-                newProduct = new List<string>();
-                newProduct.Add(""); //id
-                newProduct.Add("\"" + article.Trim() + "\""); //артикул
-                newProduct.Add("\"" + name.Trim() + "\"");  //название
-                newProduct.Add("\"" + price.Trim() + "\""); //стоимость
-                newProduct.Add("\"" + "" + "\""); //со скидкой
-                newProduct.Add("\"" + category.Trim() + "\""); //раздел товара
-                newProduct.Add("\"" + "100" + "\""); //в наличии
-                newProduct.Add("\"" + "0" + "\"");//поставка
-                newProduct.Add("\"" + "1" + "\"");//срок поставки
-                newProduct.Add("\"" + miniText.Trim() + "\"");//краткий текст
-                newProduct.Add("\"" + fullText.Trim() + "\"");//полностью текст
-                newProduct.Add("\"" + title.Trim() + "\""); //заголовок страницы
-                newProduct.Add("\"" + description.Trim() + "\""); //описание
-                newProduct.Add("\"" + keywords.Trim() + "\"");//ключевые слова
-                newProduct.Add("\"" + slug.Trim() + "\""); //ЧПУ
-                newProduct.Add(""); //с этим товаром покупают
-                newProduct.Add("");   //рекламные метки
-                newProduct.Add("\"" + "1" + "\"");  //показывать
-                newProduct.Add("\"" + "0" + "\""); //удалить
-
-                if (price != "0")
-                    files.fileWriterCSV(newProduct, "naSite");
+                UpdateTovar(searchTovarInBike, price, cookie);
+                return;
             }
+
+            searchTovarInBike = nethouse.searchTovar(name, article);
+            if (searchTovarInBike == null)
+                searchTovarInBike = nethouse.searchTovar(name, name);
+
+
+            if (name.Length > 255)
+                name = name.Remove(255);
+            if (article.Length > 128)
+                article = article.Remove(128);
+            if (title.Length > 255)
+            {
+                title = title.Remove(255);
+                title = title.Remove(title.LastIndexOf(" "));
+            }
+            if (description.Length > 200)
+            {
+                description = description.Remove(200);
+                description = description.Remove(description.LastIndexOf(" "));
+            }
+            if (keywords.Length > 100)
+            {
+                keywords = keywords.Remove(100);
+                keywords = keywords.Remove(keywords.LastIndexOf(" "));
+            }
+
+
+
+            newProduct = new List<string>();
+            newProduct.Add(""); //id
+            newProduct.Add("\"" + article.Trim() + "\""); //артикул
+            newProduct.Add("\"" + name.Trim() + "\"");  //название
+            newProduct.Add("\"" + price.Trim() + "\""); //стоимость
+            newProduct.Add("\"" + "" + "\""); //со скидкой
+            newProduct.Add("\"" + category.Trim() + "\""); //раздел товара
+            newProduct.Add("\"" + "100" + "\""); //в наличии
+            newProduct.Add("\"" + "0" + "\"");//поставка
+            newProduct.Add("\"" + "1" + "\"");//срок поставки
+            newProduct.Add("\"" + miniText.Trim() + "\"");//краткий текст
+            newProduct.Add("\"" + fullText.Trim() + "\"");//полностью текст
+            newProduct.Add("\"" + title.Trim() + "\""); //заголовок страницы
+            newProduct.Add("\"" + description.Trim() + "\""); //описание
+            newProduct.Add("\"" + keywords.Trim() + "\"");//ключевые слова
+            newProduct.Add("\"" + slug.Trim() + "\""); //ЧПУ
+            newProduct.Add(""); //с этим товаром покупают
+            newProduct.Add("");   //рекламные метки
+            newProduct.Add("\"" + "1" + "\"");  //показывать
+            newProduct.Add("\"" + "0" + "\""); //удалить
+
+            if (price != "0")
+                files.fileWriterCSV(newProduct, "naSite");*/
+            return tovar;
         }
 
         private void UpdateTovar(string searchTovarInBike, string price, CookieContainer cookie)
@@ -395,9 +425,6 @@ namespace MiniTraktor
             }
             description = specChar(description);
 
-            string templateMiniText = MinitextStr();
-            string discounts = ReturnDiscountsText();
-            description = description + "<br />" + templateMiniText + "<br />" + discounts;
             return description;
         }
 
@@ -535,6 +562,32 @@ namespace MiniTraktor
             text = text.Replace("&quot;", "\"").Replace("&amp;", "&").Replace("&lt;", "<").Replace("&gt;", ">").Replace("&laquo;", "«").Replace("&raquo;", "»").Replace("&ndash;", "-").Replace("&mdash;", "-").Replace("&lsquo;", "‘").Replace("&rsquo;", "’").Replace("&sbquo;", "‚").Replace("&ldquo;", "\"").Replace("&rdquo;", "”").Replace("&bdquo;", "„").Replace("&#43;", "+").Replace("&#40;", "(").Replace("&nbsp;", " ").Replace("&#41;", ")").Replace("&amp;quot;", "").Replace("&#039;", "'").Replace("&amp;gt;", ">").Replace("&#43;", "+").Replace("&#40;", "(").Replace("&nbsp;", " ").Replace("&#41;", ")").Replace("&#39;", "'").Replace("&quot;", "\"").Replace("&amp;", "&").Replace("&lt;", "<").Replace("&gt;", ">").Replace("&laquo;", "«").Replace("&raquo;", "»").Replace("&ndash;", "-").Replace("&mdash;", "-").Replace("&lsquo;", "‘").Replace("&rsquo;", "’").Replace("&sbquo;", "‚").Replace("&ldquo;", "\"").Replace("&rdquo;", "”").Replace("&bdquo;", "„").Replace("&#43;", "+").Replace("&#40;", "(").Replace("&nbsp;", " ").Replace("&#41;", ")").Replace("&amp;quot;", "").Replace("&#039;", "'").Replace("&amp;gt;", ">").Replace("&#39;", "'").Replace("&Oslash;", "Ø").Replace("&#8211;", "-");
 
             return text;
+        }
+
+        private void ControlsFormEnabledTrue()
+        {
+            btnStart.Invoke(new Action(() => btnStart.Enabled = true));
+            btnSaveTemplate.Invoke(new Action(() => btnSaveTemplate.Enabled = true));
+            rtbFullText.Invoke(new Action(() => rtbFullText.Enabled = true));
+            rtbMiniText.Invoke(new Action(() => rtbMiniText.Enabled = true));
+            tbDescription.Invoke(new Action(() => tbDescription.Enabled = true));
+            tbKeywords.Invoke(new Action(() => tbKeywords.Enabled = true));
+            tbLogin.Invoke(new Action(() => tbLogin.Enabled = true));
+            tbPassword.Invoke(new Action(() => tbPassword.Enabled = true));
+            tbTitle.Invoke(new Action(() => tbTitle.Enabled = true));
+        }
+
+        private void ControlsFormEnabledFalse()
+        {
+            btnStart.Invoke(new Action(() => btnStart.Enabled = false));
+            btnSaveTemplate.Invoke(new Action(() => btnSaveTemplate.Enabled = false));
+            rtbFullText.Invoke(new Action(() => rtbFullText.Enabled = false));
+            rtbMiniText.Invoke(new Action(() => rtbMiniText.Enabled = false));
+            tbDescription.Invoke(new Action(() => tbDescription.Enabled = false));
+            tbKeywords.Invoke(new Action(() => tbKeywords.Enabled = false));
+            tbLogin.Invoke(new Action(() => tbLogin.Enabled = false));
+            tbPassword.Invoke(new Action(() => tbPassword.Enabled = false));
+            tbTitle.Invoke(new Action(() => tbTitle.Enabled = false));
         }
 
     }
