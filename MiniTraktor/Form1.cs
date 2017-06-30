@@ -303,10 +303,34 @@ namespace MiniTraktor
             string otv = null;
             otv = webRequest.getRequest(urlSubCategories);
             MatchCollection tovars = new Regex("(?<=<a class=\"product-loop-title\" href=\")[\\w\\W]*?(?=\"><h3>)").Matches(otv);
-            foreach (Match str in tovars)
+            foreach (Match tovar in tovars)
             {
-                string url = str.ToString();
-                GetListTovar(url, cookie);
+                List<string> product = new List<string>();
+                string url = tovar.ToString();
+                product = GetListTovar(url, cookie);
+
+                if (product == null)
+                    continue;
+
+                string nameProduct = product[0];
+                string articl = product[1];
+                string searchTovarInBike = nethouse.searchTovar(nameProduct, articl);
+                if (searchTovarInBike == null)
+                    WriteTovarInCSV(product);
+                else
+                {
+                    string price = product[2];
+
+                    List<string> productB18 = nethouse.GetProductList(cookie, searchTovarInBike);
+                    string priceB18 = productB18[9];
+
+                    if (price != priceB18)
+                    {
+                        productB18[9] = price;
+                        nethouse.SaveTovar(cookie, productB18);
+                        countEdit++;
+                    }
+                }
             }
         }
 
@@ -331,6 +355,7 @@ namespace MiniTraktor
 
             if (name.Contains("&"))
                 name = AmpersChar(name);
+            name = name.Replace(".", "_").Replace(",", "_").Replace(" ", "_").Replace("-", "_").Replace("(", "_").Replace(")", "_").Replace("/", "_").Replace("=", "_").Replace("?", "_").Replace("+", "_").Replace("*", "_");
 
             slug = chpu.vozvr(name);
 
