@@ -229,7 +229,8 @@ namespace MiniTraktor
 
                     string nameProduct = product[0];
                     string articl = product[1];
-                    string searchTovarInBike = nethouse.searchTovar(nameProduct, articl);
+
+                    string searchTovarInBike = nethouse.searchTovar(articl);
                     if(searchTovarInBike == null)
                         WriteTovarInCSV(product);
                     else
@@ -375,7 +376,7 @@ namespace MiniTraktor
 
                 string nameProduct = product[0];
                 string articl = product[1];
-                string searchTovarInBike = nethouse.searchTovar(nameProduct, articl);
+                string searchTovarInBike = nethouse.searchTovar(articl);
                 if (searchTovarInBike == null)
                     WriteTovarInCSV(product);
                 else
