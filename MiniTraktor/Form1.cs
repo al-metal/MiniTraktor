@@ -234,7 +234,9 @@ namespace MiniTraktor
                         WriteTovarInCSV(product);
                     else
                     {
+                        bool edits = false;
                         string price = product[2];
+                        string availability = product[6];
 
                         List<string> productB18 = nethouse.GetProductList(cookie, searchTovarInBike);
                         string priceB18 = productB18[9];
@@ -242,6 +244,26 @@ namespace MiniTraktor
                         if(price != priceB18)
                         {
                             productB18[9] = price;
+                            edits = true;
+                        }
+
+                        if (availability == "Нет в наличии")
+                        {
+                            productB18[43] = "0";
+                            edits = true;
+                        }
+
+                        if(productB18[43] == "0" && availability != "Нет в наличии")
+                        {
+                            productB18[43] = "100";
+                            edits = true;
+                        }
+
+                        else
+
+
+                        if (edits)
+                        {
                             nethouse.SaveTovar(cookie, productB18);
                             countEdit++;
                         }
@@ -383,6 +405,7 @@ namespace MiniTraktor
             string category = null;
             string miniText = null;
             string slug = null;
+            string availability = null;
 
             otv = webRequest.getRequest(url);
             if (otv == "err")
@@ -391,14 +414,10 @@ namespace MiniTraktor
             name = new Regex("(?<=product_title\">).*?(?=</h1>)").Match(otv).ToString();
             article = new Regex("(?<=itemprop=\"sku\">).*?(?=</span>)").Match(otv).ToString();
             price = new Regex("(?<=\"price\" content=\").*?(?=\" />)").Match(otv).ToString();
+            availability = new Regex("(?<=<p class=\"stock out-of-stock\">).*(?=</p>)").Match(otv).ToString();
 
             if (name.Contains("&"))
                 name = AmpersChar(name);
-
-            if(name == "Блок масляного цилиндра (со штуцером) 14.55.319 (со штуц)")
-            {
-
-            }
    
             slug = chpu.vozvr(name);
 
@@ -421,6 +440,7 @@ namespace MiniTraktor
             tovar.Add(category);
             tovar.Add(miniText);
             tovar.Add(slug);
+            tovar.Add(availability);
 
             return tovar;
         }
