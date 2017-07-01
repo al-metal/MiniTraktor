@@ -40,9 +40,48 @@ namespace MiniTraktor
         string titleTextTemplate;
         string descriptionTextTemplate;
 
+        Dictionary<string, string> simbols = new Dictionary<string, string>();
+
         public Form1()
         {
             InitializeComponent();
+
+            simbols.Add(" ", "_");
+            simbols.Add("-", "_");
+            simbols.Add("!", "_");
+            simbols.Add("@", "_");
+            simbols.Add("#", "_");
+            simbols.Add("$", "_");
+            simbols.Add("%", "_");
+            simbols.Add("^", "_");
+            simbols.Add("&", "_");
+            simbols.Add("*", "_");
+            simbols.Add("(", "_");
+            simbols.Add(")", "_");
+            simbols.Add("=", "_");
+            simbols.Add("\"", "_");
+            simbols.Add("№", "_");
+            simbols.Add(";", "_");
+            simbols.Add(":", "_");
+            simbols.Add("?", "_");
+            simbols.Add("+", "_");
+            simbols.Add("{", "_");
+            simbols.Add("}", "_");
+            simbols.Add("[", "_");
+            simbols.Add("]", "_");
+            simbols.Add("|", "_");
+            simbols.Add("/", "_");
+            simbols.Add(",", "_");
+            simbols.Add(".", "_");
+            simbols.Add("  ", "_");
+            simbols.Add("--", "_");
+            simbols.Add("---", "_");
+            simbols.Add("~", "_");
+            simbols.Add("`", "_");
+            simbols.Add("·", "_");
+            simbols.Add("__", "_");
+            simbols.Add("___", "_");
+
             if (!Directory.Exists("files"))
             {
                 Directory.CreateDirectory("files");
@@ -355,16 +394,20 @@ namespace MiniTraktor
 
             if (name.Contains("&"))
                 name = AmpersChar(name);
-            name = name.Replace(".", "_").Replace(",", "_").Replace(" ", "_").Replace("-", "_").Replace("(", "_").Replace(")", "_").Replace("/", "_").Replace("=", "_").Replace("?", "_").Replace("+", "_").Replace("*", "_");
 
+            if(name == "Блок масляного цилиндра (со штуцером) 14.55.319 (со штуц)")
+            {
+
+            }
+   
             slug = chpu.vozvr(name);
 
             if (article == "" || article == "--" || article == " " || article == "-" || article == "----")
                 article = "ur_" + slug;
             else
                 article = "ur_" + article;
-            article = article.Replace("-", "_");
-
+            article = ReturnArticle(article);
+            
             price = ReturnPrice(price);
             ImagesDownload(otv, article);
             category = ReturnCategoryTovar(otv);
@@ -380,6 +423,27 @@ namespace MiniTraktor
             tovar.Add(slug);
 
             return tovar;
+        }
+
+        private string ReturnArticle(string article)
+        {
+            foreach (KeyValuePair<string, string> pair in simbols)
+            {
+                article = article.Replace(pair.Key, pair.Value);
+            }
+
+            bool b = false;
+            do
+            {
+                b = false;
+                int lastIndex = article.LastIndexOf('_');
+                if (lastIndex == article.Length - 1)
+                    b = true;
+                if (b)
+                    article = article.Remove(article.Length - 1);
+
+            } while (b);
+            return article;
         }
 
         private void UpdateTovar(string searchTovarInBike, string price, CookieContainer cookie)
