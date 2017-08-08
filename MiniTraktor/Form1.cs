@@ -46,6 +46,8 @@ namespace MiniTraktor
         string titleTextTemplate;
         string descriptionTextTemplate;
 
+        string discount = "";
+
         Dictionary<string, string> simbols = new Dictionary<string, string>();
         Dictionary<string, string> ampersands = new Dictionary<string, string>();
 
@@ -540,11 +542,13 @@ namespace MiniTraktor
                     string searchTovarInBike = nethouse.searchTovar(articl);
                     if(searchTovarInBike == "")
                     {
+                        discount = DiscountCSV();
                         boldOpen = boldOpenCSV;
                         WriteTovarInCSV(product);
                     }
                     else
                     {
+                        discount = DiscountSite();
                         boldOpen = boldOpenSite;
                         bool edits = false;
                         string name = product[0];
@@ -620,6 +624,7 @@ namespace MiniTraktor
                             string miniText = minitextTemplate;
                             miniText = ReplaceNameTovar(name, miniText);
                             miniText = miniDescriptionText + "<br >" + miniText;
+                            miniText = ReplaceSEO(miniText, name, article);
                             productB18[7] = miniText;
 
                             edits = true;
@@ -629,6 +634,7 @@ namespace MiniTraktor
                         {
                             string fullText = fullTextTemplate;
                             fullText = ReplaceNameTovar(name, fullText);
+                            fullText = ReplaceSEO(fullText, name, article);
                             productB18[8] = fullText;
 
                             edits = true;
@@ -749,7 +755,6 @@ namespace MiniTraktor
 
         private string ReplaceSEO(string text, string nameTovarRacerMotors, string article)
         {
-            string discount = Discount();
             text = text.Replace("СКИДКА", discount).Replace("НАЗВАНИЕ", nameTovarRacerMotors).Replace("АРТИКУЛ", article);
             return text;
         }
@@ -1031,9 +1036,15 @@ namespace MiniTraktor
             MessageBox.Show("Сохранено");
         }
 
-        private string Discount()
+        private string DiscountCSV()
         {
             string discount = "<p style=\"\"text-align: right;\"\"><span style=\"\"font-weight: bold; font-weight: bold;\"\"> 1. <a href=\"\"https://bike18.ru/oplata-dostavka\"\">Выгодные условия доставки по всей России!</a></span></p><p style=\"\"text-align: right;\"\"><span style=\"\"font-weight: bold; font-weight: bold;\"\"> 2. <a href=\"\"https://bike18.ru/stock\"\">Нашли дешевле!? 110% разницы Ваши!</a></span></p><p style=\"\"text-align: right;\"\"><span style=\"\"font-weight: bold; font-weight: bold;\"\"> 3. <a href=\"\"https://bike18.ru/service\"\">Также обращайтесь в наш сервис центр в Ижевске!</a></span></p>";
+            return discount;
+        }
+
+        private string DiscountSite()
+        {
+            string discount = "<p style=\"text-align: right;\"><span style=\"font-weight: bold; font-weight: bold;\"> 1. <a href=\"https://bike18.ru/oplata-dostavka\">Выгодные условия доставки по всей России!</a></span></p><p style=\"text-align: right;\"><span style=\"font-weight: bold; font-weight: bold;\"> 2. <a href=\"https://bike18.ru/stock\">Нашли дешевле!? 110% разницы Ваши!</a></span></p><p style=\"text-align: right;\"><span style=\"font-weight: bold; font-weight: bold;\"> 3. <a href=\"https://bike18.ru/service\">Также обращайтесь в наш сервис центр в Ижевске!</a></span></p>";
             return discount;
         }
 
