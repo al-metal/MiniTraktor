@@ -37,6 +37,12 @@
             this.tbPassword = new System.Windows.Forms.TextBox();
             this.btnStart = new System.Windows.Forms.Button();
             this.btnSaveTemplate = new System.Windows.Forms.Button();
+            this.cbOther = new System.Windows.Forms.CheckBox();
+            this.gpOther = new System.Windows.Forms.GroupBox();
+            this.cbFullText = new System.Windows.Forms.CheckBox();
+            this.cbMinitext = new System.Windows.Forms.CheckBox();
+            this.cbSEO = new System.Windows.Forms.CheckBox();
+            this.gpOther.SuspendLayout();
             this.SuspendLayout();
             // 
             // rtbMiniText
@@ -80,14 +86,14 @@
             // 
             this.tbLogin.Location = new System.Drawing.Point(601, 12);
             this.tbLogin.Name = "tbLogin";
-            this.tbLogin.Size = new System.Drawing.Size(201, 20);
+            this.tbLogin.Size = new System.Drawing.Size(217, 20);
             this.tbLogin.TabIndex = 5;
             // 
             // tbPassword
             // 
             this.tbPassword.Location = new System.Drawing.Point(601, 38);
             this.tbPassword.Name = "tbPassword";
-            this.tbPassword.Size = new System.Drawing.Size(201, 20);
+            this.tbPassword.Size = new System.Drawing.Size(217, 20);
             this.tbPassword.TabIndex = 6;
             this.tbPassword.UseSystemPasswordChar = true;
             // 
@@ -95,7 +101,7 @@
             // 
             this.btnStart.Location = new System.Drawing.Point(601, 64);
             this.btnStart.Name = "btnStart";
-            this.btnStart.Size = new System.Drawing.Size(201, 23);
+            this.btnStart.Size = new System.Drawing.Size(217, 23);
             this.btnStart.TabIndex = 7;
             this.btnStart.Text = "Начать обработку";
             this.btnStart.UseVisualStyleBackColor = true;
@@ -105,17 +111,73 @@
             // 
             this.btnSaveTemplate.Location = new System.Drawing.Point(601, 93);
             this.btnSaveTemplate.Name = "btnSaveTemplate";
-            this.btnSaveTemplate.Size = new System.Drawing.Size(201, 23);
+            this.btnSaveTemplate.Size = new System.Drawing.Size(217, 23);
             this.btnSaveTemplate.TabIndex = 8;
             this.btnSaveTemplate.Text = "Сохранить шаблон";
             this.btnSaveTemplate.UseVisualStyleBackColor = true;
             this.btnSaveTemplate.Click += new System.EventHandler(this.btnSaveTemplate_Click);
             // 
+            // cbOther
+            // 
+            this.cbOther.AutoSize = true;
+            this.cbOther.Location = new System.Drawing.Point(601, 122);
+            this.cbOther.Name = "cbOther";
+            this.cbOther.Size = new System.Drawing.Size(106, 17);
+            this.cbOther.TabIndex = 25;
+            this.cbOther.Text = "Дополнительно";
+            this.cbOther.UseVisualStyleBackColor = true;
+            this.cbOther.CheckedChanged += new System.EventHandler(this.cbOther_CheckedChanged_1);
+            // 
+            // gpOther
+            // 
+            this.gpOther.Controls.Add(this.cbFullText);
+            this.gpOther.Controls.Add(this.cbMinitext);
+            this.gpOther.Controls.Add(this.cbSEO);
+            this.gpOther.Location = new System.Drawing.Point(602, 145);
+            this.gpOther.Name = "gpOther";
+            this.gpOther.Size = new System.Drawing.Size(216, 85);
+            this.gpOther.TabIndex = 26;
+            this.gpOther.TabStop = false;
+            this.gpOther.Text = "Дополнительно";
+            this.gpOther.Visible = false;
+            // 
+            // cbFullText
+            // 
+            this.cbFullText.AutoSize = true;
+            this.cbFullText.Location = new System.Drawing.Point(6, 65);
+            this.cbFullText.Name = "cbFullText";
+            this.cbFullText.Size = new System.Drawing.Size(203, 17);
+            this.cbFullText.TabIndex = 24;
+            this.cbFullText.Text = "Обновить полное описание товара";
+            this.cbFullText.UseVisualStyleBackColor = true;
+            // 
+            // cbMinitext
+            // 
+            this.cbMinitext.AutoSize = true;
+            this.cbMinitext.Location = new System.Drawing.Point(6, 42);
+            this.cbMinitext.Name = "cbMinitext";
+            this.cbMinitext.Size = new System.Drawing.Size(208, 17);
+            this.cbMinitext.TabIndex = 23;
+            this.cbMinitext.Text = "Обновить краткое описание товара";
+            this.cbMinitext.UseVisualStyleBackColor = true;
+            // 
+            // cbSEO
+            // 
+            this.cbSEO.AutoSize = true;
+            this.cbSEO.Location = new System.Drawing.Point(6, 19);
+            this.cbSEO.Name = "cbSEO";
+            this.cbSEO.Size = new System.Drawing.Size(100, 17);
+            this.cbSEO.TabIndex = 22;
+            this.cbSEO.Text = "Обновить СЕО";
+            this.cbSEO.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(814, 374);
+            this.ClientSize = new System.Drawing.Size(830, 374);
+            this.Controls.Add(this.cbOther);
+            this.Controls.Add(this.gpOther);
             this.Controls.Add(this.btnSaveTemplate);
             this.Controls.Add(this.btnStart);
             this.Controls.Add(this.tbPassword);
@@ -128,6 +190,8 @@
             this.Name = "Form1";
             this.Text = "Запчасти для минитракторов";
             this.Load += new System.EventHandler(this.Form1_Load);
+            this.gpOther.ResumeLayout(false);
+            this.gpOther.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -144,6 +208,11 @@
         private System.Windows.Forms.TextBox tbPassword;
         private System.Windows.Forms.Button btnStart;
         private System.Windows.Forms.Button btnSaveTemplate;
+        private System.Windows.Forms.CheckBox cbOther;
+        private System.Windows.Forms.GroupBox gpOther;
+        private System.Windows.Forms.CheckBox cbFullText;
+        private System.Windows.Forms.CheckBox cbMinitext;
+        private System.Windows.Forms.CheckBox cbSEO;
     }
 }
 

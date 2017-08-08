@@ -1031,5 +1031,12 @@ namespace MiniTraktor
             tbTitle.Invoke(new Action(() => tbTitle.Enabled = false));
         }
 
+        private void cbOther_CheckedChanged_1(object sender, EventArgs e)
+        {
+            if (gpOther.Visible)
+                gpOther.Visible = false;
+            else
+                gpOther.Visible = true;
+        }
     }
 }
