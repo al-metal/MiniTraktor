@@ -400,12 +400,10 @@ namespace Bike18
         public string searchTovar(string searchString)
         {
             string otv = null;
-            string urlTovarBike = null;
-
             otv = webRequest.getRequest("http://bike18.ru/products/search/page/1?sort=0&balance=&categoryId=&min_cost=&max_cost=&text=" + searchString);
             string strUrlProd1 = new Regex("(?<=<a href=\").*(?=\"><div class=\"-relative item-image\")").Match(otv).ToString();
 
-            return urlTovarBike;
+            return strUrlProd1;
         }
 
         #region Загрузка картинки товара на сайта Bike18.ru
