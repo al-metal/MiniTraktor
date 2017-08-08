@@ -36,6 +36,10 @@ namespace MiniTraktor
         int countEdit = 0;
         string otv;
 
+        bool chekedSEO = false;
+        bool chekedMiniText = false;
+        bool chekedFullText = false;
+
         string minitextTemplate;
         string fullTextTemplate;
         string keywordsTextTemplate;
@@ -477,6 +481,10 @@ namespace MiniTraktor
                 return;
             }
 
+            chekedSEO = cbSEO.Checked;
+            chekedMiniText = cbMinitext.Checked;
+            chekedFullText = cbFullText.Checked;
+
             minitextTemplate = MinitextStr();
             fullTextTemplate = FulltextStr();
             keywordsTextTemplate = tbKeywords.Lines[0].ToString();
@@ -539,10 +547,16 @@ namespace MiniTraktor
                     {
                         boldOpen = boldOpenSite;
                         bool edits = false;
+                        string name = product[0];
+                        string article = product[1];
                         string price = product[2];
+                        string category = product[3];
+                        string miniDescriptionText = product[4];
+                        string slug = product[5];
                         string availability = product[6];
 
                         List<string> productB18 = nethouse.GetProductList(cookie, searchTovarInBike);
+                        
                         string priceB18 = productB18[9];
 
                         if(price != priceB18)
@@ -566,6 +580,57 @@ namespace MiniTraktor
                         if (productB18[42].Contains("&alsoBuy[0]=0") || productB18[42].Contains("&alsoBuy[0]=als"))
                         {
                             productB18[42] = nethouse.alsoBuyTovars(productB18);
+                            edits = true;
+                        }
+
+                        if (chekedSEO)
+                        {
+                            string titleText = titleTextTemplate;
+                            string descriptionText = descriptionTextTemplate;
+                            string keywordsText = keywordsTextTemplate;
+
+                            titleText = ReplaceSEO(titleText, name, article);
+                            descriptionText = ReplaceSEO(descriptionText, name, article);
+                            keywordsText = ReplaceSEO(keywordsText, name, article);
+
+                            if (titleText.Length > 255)
+                            {
+                                titleText = titleText.Remove(255);
+                                titleText = titleText.Remove(titleText.LastIndexOf(" "));
+                            }
+                            if (descriptionText.Length > 200)
+                            {
+                                descriptionText = descriptionText.Remove(200);
+                                descriptionText = descriptionText.Remove(descriptionText.LastIndexOf(" "));
+                            }
+                            if (keywordsText.Length > 100)
+                            {
+                                keywordsText = keywordsText.Remove(100);
+                                keywordsText = keywordsText.Remove(keywordsText.LastIndexOf(" "));
+                            }
+
+                            productB18[11] = descriptionText;
+                            productB18[12] = keywordsText;
+                            productB18[13] = titleText;
+                            edits = true;
+                        }
+
+                        if (chekedMiniText)
+                        {
+                            string miniText = minitextTemplate;
+                            miniText = ReplaceNameTovar(name, miniText);
+                            miniText = miniDescriptionText + "<br >" + miniText;
+                            productB18[7] = miniText;
+
+                            edits = true;
+                        }
+
+                        if (chekedFullText)
+                        {
+                            string fullText = fullTextTemplate;
+                            fullText = ReplaceNameTovar(name, fullText);
+                            productB18[8] = fullText;
+
                             edits = true;
                         }
 
@@ -850,7 +915,7 @@ namespace MiniTraktor
         private string ReplaceNameTovar(string nameTovar, string text)
         {
             nameTovar = boldOpen + nameTovar + boldClose;
-            text = text.Replace("ТОВАР", nameTovar);
+            text = text.Replace("НАЗВАНИЕ", nameTovar);
             return text;
         }
 
@@ -968,7 +1033,7 @@ namespace MiniTraktor
 
         private string Discount()
         {
-            string discount = "<p style=\"\"text-align: right;\"\"><span style=\"\"font -weight: bold; font-weight: bold;\"\"> Сделай ТРОЙНОЙ удар по нашим ценам! </span></p><p style=\"\"text-align: right;\"\"><span style=\"\"font -weight: bold; font-weight: bold;\"\"> 1. <a target=\"\"_blank\"\" href =\"\"http://bike18.ru/stock\"\"> Скидки за отзывы о товарах!</a> </span></p><p style=\"\"text-align: right;\"\"><span style=\"\"font -weight: bold; font-weight: bold;\"\"> 2. <a target=\"\"_blank\"\" href =\"\"http://bike18.ru/stock\"\"> Друзьям скидки и подарки!</a> </span></p><p style=\"\"text-align: right;\"\"><span style=\"\"font -weight: bold; font-weight: bold;\"\"> 3. <a target=\"\"_blank\"\" href =\"\"http://bike18.ru/stock\"\"> Нашли дешевле!? 110% разницы Ваши!</a></span></p>";
+            string discount = "<p style=\"\"text-align: right;\"\"><span style=\"\"font-weight: bold; font-weight: bold;\"\"> 1. <a href=\"\"https://bike18.ru/oplata-dostavka\"\">Выгодные условия доставки по всей России!</a></span></p><p style=\"\"text-align: right;\"\"><span style=\"\"font-weight: bold; font-weight: bold;\"\"> 2. <a href=\"\"https://bike18.ru/stock\"\">Нашли дешевле!? 110% разницы Ваши!</a></span></p><p style=\"\"text-align: right;\"\"><span style=\"\"font-weight: bold; font-weight: bold;\"\"> 3. <a href=\"\"https://bike18.ru/service\"\">Также обращайтесь в наш сервис центр в Ижевске!</a></span></p>";
             return discount;
         }
 
