@@ -538,7 +538,7 @@ namespace MiniTraktor
                     string articl = product[1];
 
                     string searchTovarInBike = nethouse.searchTovar(nameProduct, articl);
-                    if (searchTovarInBike == "")
+                    if (searchTovarInBike == "" && searchTovarInBike == null)
                     {
                         discount = discountTemplate;
                         boldOpen = boldOpenCSV;
@@ -633,6 +633,7 @@ namespace MiniTraktor
                             string fullText = fullTextTemplate;
                             fullText = ReplaceNameTovar(name, fullText);
                             fullText = ReplaceSEO(fullText, name, article);
+                            fullText = fullText.Replace("\"\"", "\"");
                             productB18[8] = fullText;
 
                             edits = true;
