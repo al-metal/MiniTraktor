@@ -41,6 +41,7 @@ namespace MiniTraktor
         string titleTextTemplate;
         string descriptionTextTemplate;
 
+        string discountTemplate;
         string discount = "";
 
         Dictionary<string, string> simbols = new Dictionary<string, string>();
@@ -489,7 +490,7 @@ namespace MiniTraktor
             descriptionTextTemplate = tbDescription.Lines[0].ToString();
 
             File.Delete("naSite.csv");
-            newList();
+            nethouse.NewListUploadinBike18("naSite");
 
             Thread tabl = new Thread(() => UpdateTovar(cookie));
             forms = tabl;
@@ -500,6 +501,7 @@ namespace MiniTraktor
         private void UpdateTovar(CookieDictionary cookie)
         {
             ControlsFormEnabledFalse();
+            discountTemplate = nethouse.Discount();
 
             otv = webRequest.getRequest("https://xn--80andaliilpdrd0d.xn--p1ai/shop/");
             MatchCollection categories = new Regex("(?<=<li class=\"product-category  col-md-4 col-sm-6\">)[\\w\\W]*?(?=<img)").Matches(otv);
@@ -538,13 +540,13 @@ namespace MiniTraktor
                     string searchTovarInBike = nethouse.searchTovar(nameProduct, articl);
                     if (searchTovarInBike == "")
                     {
-                        discount = DiscountCSV();
+                        discount = discountTemplate;
                         boldOpen = boldOpenCSV;
                         WriteTovarInCSV(product);
                     }
                     else
                     {
-                        discount = DiscountSite();
+                        discount = discountTemplate.Replace("\"\"", "\"");
                         boldOpen = boldOpenSite;
                         bool edits = false;
                         string name = product[0];
@@ -659,23 +661,12 @@ namespace MiniTraktor
 
         private List<string> ReplaceAmpersChar(List<string> tovarList)
         {
-            tovarList[7] = ampersChar(tovarList[7]);
-            tovarList[8] = ampersChar(tovarList[8]);
-            tovarList[11] = ampersChar(tovarList[11]);
-            tovarList[12] = ampersChar(tovarList[12]);
-            tovarList[13] = ampersChar(tovarList[13]);
+            tovarList[7] = nethouse.ReplaceAmpersandsChar(tovarList[7]);
+            tovarList[8] = nethouse.ReplaceAmpersandsChar(tovarList[8]);
+            tovarList[11] = nethouse.ReplaceAmpersandsChar(tovarList[11]);
+            tovarList[12] = nethouse.ReplaceAmpersandsChar(tovarList[12]);
+            tovarList[13] = nethouse.ReplaceAmpersandsChar(tovarList[13]);
             return tovarList;
-        }
-
-        private string ampersChar(string text)
-        {
-            if (text == null)
-                return text = "";
-            foreach (KeyValuePair<string, string> pair in ampersands)
-            {
-                text = text.Replace(pair.Key, pair.Value);
-            }
-            return text;
         }
 
         private void WriteTovarInCSV(List<string> product)
@@ -813,7 +804,7 @@ namespace MiniTraktor
             availability = new Regex("(?<=<p class=\"stock in-stock\">).*?(?=</p>)").Match(otv).ToString();
 
             if (name.Contains("&"))
-                name = AmpersChar(name);
+                name = nethouse.ReplaceAmpersandsChar(name);
 
             slug = chpu.vozvr(name);
 
@@ -823,12 +814,12 @@ namespace MiniTraktor
                 article = "ur_" + article;
             article = ReturnArticle(article);
 
-            price = ReturnPrice(price);
+            price = nethouse.ReturnPrice(Convert.ToDouble(price), 0.02).ToString();
             ImagesDownload(otv, article);
             category = ReturnCategoryTovar(otv);
 
             miniText = ReturnDescriptionText(otv);
-            miniText = AmpersChar(miniText);
+            miniText = nethouse.ReplaceAmpersandsChar(miniText);
 
             tovar.Add(name);
             tovar.Add(article);
@@ -874,12 +865,6 @@ namespace MiniTraktor
             }
         }
 
-        private string AmpersChar(string text)
-        {
-            text = text.Replace("&#8211;", "-").Replace("&#8220;", "«").Replace("&#8221;", "»").Replace("&#8212;", "-").Replace("&#8243;", "″").Replace("&#215;", "-").Replace("~", "");
-            return text;
-        }
-
         private void ImagesDownload(string otv, string article)
         {
             MatchCollection images = new Regex("(?<=data-zoom-image=\").*?(?=\" title=\")").Matches(otv);
@@ -902,17 +887,6 @@ namespace MiniTraktor
             }
         }
 
-        private string ReturnPrice(string price)
-        {
-            double dblPrice = Convert.ToDouble(price);
-            dblPrice = dblPrice - (dblPrice * 0.02);
-            dblPrice = Math.Round(dblPrice);
-            int intPrice = Convert.ToInt32(dblPrice);
-            intPrice = (intPrice / 10) * 10;
-            price = intPrice.ToString();
-            return price;
-        }
-
         private string ReplaceNameTovar(string nameTovar, string text)
         {
             nameTovar = boldOpen + nameTovar + boldClose;
@@ -930,7 +904,7 @@ namespace MiniTraktor
                 string s = str.ToString();
                 description = description.Replace(s, "").Replace("</a>", "").Trim();
             }
-            description = specChar(description);
+            description = nethouse.ReplaceAmpersandsChar(description);
 
             return description;
         }
@@ -1030,51 +1004,6 @@ namespace MiniTraktor
             writers.Close();
 
             MessageBox.Show("Сохранено");
-        }
-
-        private string DiscountCSV()
-        {
-            string discount = "<p style=\"\"text-align: right;\"\"><span style=\"\"font-weight: bold; font-weight: bold;\"\"> 1. <a href=\"\"https://bike18.ru/oplata-dostavka\"\">Выгодные условия доставки по всей России!</a></span></p><p style=\"\"text-align: right;\"\"><span style=\"\"font-weight: bold; font-weight: bold;\"\"> 2. <a href=\"\"https://bike18.ru/stock\"\">Нашли дешевле!? 110% разницы Ваши!</a></span></p><p style=\"\"text-align: right;\"\"><span style=\"\"font-weight: bold; font-weight: bold;\"\"> 3. <a href=\"\"https://bike18.ru/service\"\">Также обращайтесь в наш сервис центр в Ижевске!</a></span></p>";
-            return discount;
-        }
-
-        private string DiscountSite()
-        {
-            string discount = "<p style=\"text-align: right;\"><span style=\"font-weight: bold; font-weight: bold;\"> 1. <a href=\"https://bike18.ru/oplata-dostavka\">Выгодные условия доставки по всей России!</a></span></p><p style=\"text-align: right;\"><span style=\"font-weight: bold; font-weight: bold;\"> 2. <a href=\"https://bike18.ru/stock\">Нашли дешевле!? 110% разницы Ваши!</a></span></p><p style=\"text-align: right;\"><span style=\"font-weight: bold; font-weight: bold;\"> 3. <a href=\"https://bike18.ru/service\">Также обращайтесь в наш сервис центр в Ижевске!</a></span></p>";
-            return discount;
-        }
-
-        private List<string> newList()
-        {
-            List<string> newProduct = new List<string>();
-            newProduct.Add("id");                                                                               //id
-            newProduct.Add("Артикул *");                                                 //артикул
-            newProduct.Add("Название товара *");                                          //название
-            newProduct.Add("Стоимость товара *");                                    //стоимость
-            newProduct.Add("Стоимость со скидкой");                                       //со скидкой
-            newProduct.Add("Раздел товара *");                                         //раздел товара
-            newProduct.Add("Товар в наличии *");                                                    //в наличии
-            newProduct.Add("Поставка под заказ *");                                                 //поставка
-            newProduct.Add("Срок поставки (дни) *");                                           //срок поставки
-            newProduct.Add("Краткий текст");                                 //краткий текст
-            newProduct.Add("Текст полностью");                                          //полностью текст
-            newProduct.Add("Заголовок страницы (title)");                               //заголовок страницы
-            newProduct.Add("Описание страницы (description)");                                 //описание
-            newProduct.Add("Ключевые слова страницы (keywords)");                                 //ключевые слова
-            newProduct.Add("ЧПУ страницы (slug)");                                   //ЧПУ
-            newProduct.Add("С этим товаром покупают");                              //с этим товаром покупают
-            newProduct.Add("Рекламные метки");
-            newProduct.Add("Показывать на сайте *");                                           //показывать
-            newProduct.Add("Удалить *");                                    //удалить
-            files.fileWriterCSV(newProduct, "naSite");
-            return newProduct;
-        }
-
-        public string specChar(string text)
-        {
-            text = text.Replace("&quot;", "\"").Replace("&amp;", "&").Replace("&lt;", "<").Replace("&gt;", ">").Replace("&laquo;", "«").Replace("&raquo;", "»").Replace("&ndash;", "-").Replace("&mdash;", "-").Replace("&lsquo;", "‘").Replace("&rsquo;", "’").Replace("&sbquo;", "‚").Replace("&ldquo;", "\"").Replace("&rdquo;", "”").Replace("&bdquo;", "„").Replace("&#43;", "+").Replace("&#40;", "(").Replace("&nbsp;", " ").Replace("&#41;", ")").Replace("&amp;quot;", "").Replace("&#039;", "'").Replace("&amp;gt;", ">").Replace("&#43;", "+").Replace("&#40;", "(").Replace("&nbsp;", " ").Replace("&#41;", ")").Replace("&#39;", "'").Replace("&quot;", "\"").Replace("&amp;", "&").Replace("&lt;", "<").Replace("&gt;", ">").Replace("&laquo;", "«").Replace("&raquo;", "»").Replace("&ndash;", "-").Replace("&mdash;", "-").Replace("&lsquo;", "‘").Replace("&rsquo;", "’").Replace("&sbquo;", "‚").Replace("&ldquo;", "\"").Replace("&rdquo;", "”").Replace("&bdquo;", "„").Replace("&#43;", "+").Replace("&#40;", "(").Replace("&nbsp;", " ").Replace("&#41;", ")").Replace("&amp;quot;", "").Replace("&#039;", "'").Replace("&amp;gt;", ">").Replace("&#39;", "'").Replace("&Oslash;", "Ø").Replace("&#8211;", "-");
-
-            return text;
         }
 
         private void ControlsFormEnabledTrue()
