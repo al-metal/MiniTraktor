@@ -512,16 +512,17 @@ namespace MiniTraktor
                 urlCategories = urlCategories.Replace("\">", "").Replace("<a href=\"", "").Trim();
 
                 otv = webRequest.getRequest(urlCategories);
-                MatchCollection subCategories = new Regex("(?<=<li class=\"product-category  col-md-4 col-sm-6\">)[\\w\\W]*?(?=<img)").Matches(otv);
+                MatchCollection subCategories = new Regex("(?<=class=\"product-category  col-md-4 col-sm-6\">)[\\w\\W]*?(?=<img src=)").Matches(otv);
                 foreach (Match subStr in subCategories)
                 {
                     string urlSubCategories = subStr.ToString();
+                    urlSubCategories = new Regex("(?<=<a href=\").*?(?=\">)").Match(urlSubCategories).ToString();
                     urlSubCategories = urlSubCategories.Replace("\">", "").Replace("<a href=\"", "").Trim();
 
                     GetArrayTovar(urlSubCategories, cookie);
                 }
 
-                MatchCollection tovars = new Regex("(?<=<a class=\"product-loop-title\" href=\")[\\w\\W]*?(?=\"><h3>)").Matches(otv);
+                MatchCollection tovars = new Regex("(?<=<a class=\"product-loop-title\" href=\").*?(?=\">)").Matches(otv);
                 foreach (Match tovar in tovars)
                 {
                     List<string> product = new List<string>();
@@ -808,8 +809,8 @@ namespace MiniTraktor
 
             name = new Regex("(?<=product_title\">).*?(?=</h1>)").Match(otv).ToString();
             article = new Regex("(?<=itemprop=\"sku\">).*?(?=</span>)").Match(otv).ToString();
-            price = new Regex("(?<=\"price\" content=\").*?(?=\" />)").Match(otv).ToString();
-            availability = new Regex("(?<=<p class=\"stock out-of-stock\">).*(?=</p>)").Match(otv).ToString();
+            price = new Regex("(?<=price\":\").*(?=\")").Match(otv).ToString().Replace(".00", "");
+            availability = new Regex("(?<=<p class=\"stock in-stock\">).*?(?=</p>)").Match(otv).ToString();
 
             if (name.Contains("&"))
                 name = AmpersChar(name);
