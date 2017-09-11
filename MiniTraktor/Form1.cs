@@ -1,19 +1,14 @@
-﻿using Bike18;
+﻿using NehouseLibrary;
+using xNet.Net;
 using RacerMotors;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using web;
 using Формирование_ЧПУ;
 
 namespace MiniTraktor
@@ -475,7 +470,7 @@ namespace MiniTraktor
             Properties.Settings.Default.Save();
             #endregion
 
-            CookieContainer cookie = nethouse.CookieNethouse(tbLogin.Text, tbPassword.Text);
+            CookieDictionary cookie = nethouse.CookieNethouse(tbLogin.Text, tbPassword.Text);
 
             if (cookie.Count != 4)
             {
@@ -502,7 +497,7 @@ namespace MiniTraktor
             forms.Start();
         }
 
-        private void UpdateTovar(CookieContainer cookie)
+        private void UpdateTovar(CookieDictionary cookie)
         {
             ControlsFormEnabledFalse();
 
@@ -539,8 +534,8 @@ namespace MiniTraktor
                     string nameProduct = product[0];
                     string articl = product[1];
 
-                    string searchTovarInBike = nethouse.searchTovar(articl);
-                    if(searchTovarInBike == "")
+                    string searchTovarInBike = nethouse.searchTovar(nameProduct, articl);
+                    if (searchTovarInBike == "")
                     {
                         discount = DiscountCSV();
                         boldOpen = boldOpenCSV;
@@ -560,10 +555,10 @@ namespace MiniTraktor
                         string availability = product[6];
 
                         List<string> productB18 = nethouse.GetProductList(cookie, searchTovarInBike);
-                        
+
                         string priceB18 = productB18[9];
 
-                        if(price != priceB18)
+                        if (price != priceB18)
                         {
                             productB18[9] = price;
                             edits = true;
@@ -575,7 +570,7 @@ namespace MiniTraktor
                             edits = true;
                         }
 
-                        if(productB18[43] == "0" && availability != "Нет в наличии")
+                        if (productB18[43] == "0" && availability != "Нет в наличии")
                         {
                             productB18[43] = "100";
                             edits = true;
@@ -654,7 +649,7 @@ namespace MiniTraktor
             System.Threading.Thread.Sleep(10000);
             string[] naSite1 = File.ReadAllLines("naSite.csv", Encoding.GetEncoding(1251));
             if (naSite1.Length > 1)
-                nethouse.UploadCSVNethouse(cookie, "naSite.csv");
+                nethouse.UploadCSVNethouse(cookie, "naSite.csv", tbLogin.Text, tbPassword.Text);
 
             MessageBox.Show("Обновлено товаров: " + countEdit);
 
@@ -727,7 +722,7 @@ namespace MiniTraktor
                 keywordsText = keywordsText.Remove(100);
                 keywordsText = keywordsText.Remove(keywordsText.LastIndexOf(" "));
             }
-            
+
             newProduct = new List<string>();
             newProduct.Add(""); //id
             newProduct.Add("\"" + article.Trim() + "\""); //артикул
@@ -759,7 +754,7 @@ namespace MiniTraktor
             return text;
         }
 
-        private void GetArrayTovar(string urlSubCategories, CookieContainer cookie)
+        private void GetArrayTovar(string urlSubCategories, CookieDictionary cookie)
         {
             string otv = null;
             otv = webRequest.getRequest(urlSubCategories);
@@ -775,7 +770,7 @@ namespace MiniTraktor
 
                 string nameProduct = product[0];
                 string articl = product[1];
-                string searchTovarInBike = nethouse.searchTovar(articl);
+                string searchTovarInBike = nethouse.searchTovar(nameProduct, articl);
                 if (searchTovarInBike == null)
                     WriteTovarInCSV(product);
                 else
@@ -795,7 +790,7 @@ namespace MiniTraktor
             }
         }
 
-        private List<string> GetListTovar(string url, CookieContainer cookie)
+        private List<string> GetListTovar(string url, CookieDictionary cookie)
         {
             List<string> tovar = new List<string>();
             string otv = null;
@@ -818,7 +813,7 @@ namespace MiniTraktor
 
             if (name.Contains("&"))
                 name = AmpersChar(name);
-   
+
             slug = chpu.vozvr(name);
 
             if (article == "" || article == "--" || article == " " || article == "-" || article == "----")
@@ -826,7 +821,7 @@ namespace MiniTraktor
             else
                 article = "ur_" + article;
             article = ReturnArticle(article);
-            
+
             price = ReturnPrice(price);
             ImagesDownload(otv, article);
             category = ReturnCategoryTovar(otv);
@@ -866,7 +861,7 @@ namespace MiniTraktor
             return article;
         }
 
-        private void UpdateTovar(string searchTovarInBike, string price, CookieContainer cookie)
+        private void UpdateTovar(string searchTovarInBike, string price, CookieDictionary cookie)
         {
             List<string> tovarBike = nethouse.GetProductList(cookie, searchTovarInBike);
             string priceBike = tovarBike[9].ToString();
