@@ -538,9 +538,9 @@ namespace MiniTraktor
                     string articl = product[1];
 
                     string searchTovarInBike = nethouse.searchTovar(nameProduct, articl);
-                    if (searchTovarInBike == "" && searchTovarInBike == null)
+                    if (searchTovarInBike == "" || searchTovarInBike == null)
                     {
-                        discount = discountTemplate;
+                        discount = discountTemplate.Replace("\"", "\"\"");
                         boldOpen = boldOpenCSV;
                         WriteTovarInCSV(product);
                     }
@@ -567,13 +567,13 @@ namespace MiniTraktor
                             edits = true;
                         }
 
-                        if (availability == "Нет в наличии")
+                        if (availability == "")
                         {
                             productB18[43] = "0";
                             edits = true;
                         }
 
-                        if (productB18[43] == "0" && availability != "Нет в наличии")
+                        if (productB18[43] == "0" && availability != "")
                         {
                             productB18[43] = "100";
                             edits = true;
